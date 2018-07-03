@@ -1,0 +1,58 @@
+{
+  "CO" : {
+    "name" : "Carbon Monoxide",
+    "unit" : "PPM",
+    "array" : [0 , 4.5 , 9.5 , 12.5 , 15.5 , 30.5 , 40.5 , 50.5],
+    "step" : 0.1,
+    "calculateAqi": true,
+    "tag": "CO"
+  },
+  "O3" : {
+    "name" : "Ozone",
+    "unit" : "PPB",
+    "array" : [0,  55 , 71 , 86 , 106 , 201 , 201],
+    "step" : 1,
+    "calculateAqi": true,
+    "tag": "O",
+    "tag2": "3"
+  },
+  "NO2" : {
+    "name" : "Nitrogen Dioxide",
+    "unit" : "PPB",
+    "array" : [0 , 54 , 101 , 361 , 650 , 1250 , 1650],
+    "step" : 1,
+    "calculateAqi" : true,
+    "tag": "NO",
+    "tag2": "2"
+  },
+  "SO2" : {
+    "name" : "Sulfur Dioxide",
+    "unit" : "PPB",
+    "array" : [0 , 36 , 76 , 186 , 305 , 605 , 805],
+    "step" : 1,
+    "calculateAqi": true,
+    "tag": "SO",
+    "tag2": "2"
+  },
+  "PM10" : {
+    "name" : "Particle Pollution",
+    "unit" : "GQ",
+    "array" : [0 , 55 , 155 , 255 , 355 , 425 , 505 , 605],
+    "step": 1,
+    "calculateAqi" : true,
+    "tag": "PM",
+    "tag2": "10"
+  },
+  "relativeHumidity" : {
+    "name" : "Relative Humidity",
+    "unit" : "%",
+    "calculateAqi" : false,
+    "tag": "RH"
+  },
+  "temperature" : {
+    "name" : "Temperature",
+    "unit" : "ºC",
+    "calculateAqi" : false,
+    "tag": "T"
+  }
+}

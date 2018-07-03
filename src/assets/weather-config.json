@@ -1,0 +1,42 @@
+{
+  "relativeHumidity" : {
+    "name" : "Relative Humidity",
+    "unit" : "%",
+    "tag": "RH"
+  },
+  "temperature" : {
+    "name" : "Temperature",
+    "unit" : "ºC",
+    "tag": "T"
+  },
+  "precipitation" : {
+    "name" : "Precipitation",
+    "unit" : "",
+    "tag": "P"
+  },
+  "solarradiation" : {
+    "name" : "Solar Radiation",
+    "unit" : "",
+    "tag": "SR"
+  },
+  "weatherType" : {
+    "name" : "Weather Type",
+    "unit" : "",
+    "tag": "WT"
+  },
+  "windDirection" : {
+    "name" : "Wind Direction",
+    "unit" : "",
+    "tag": "WD"
+  },
+  "windSpeed" : {
+    "name" : "Wind Speed",
+    "unit" : "",
+    "tag": "WS"
+  },
+  "barometricPressure" : {
+    "name" : "Barometric Pressure",
+    "unit" : "",
+    "tag": "BP"
+  }
+}

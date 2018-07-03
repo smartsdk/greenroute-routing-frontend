@@ -1,0 +1,22 @@
+{
+    "modes" : {
+        "Transit": "TRANSIT,WALK",
+        "Bicycle Only": "BICYCLE",
+        "Bicycle & Transit": "TRANSIT,BICYCLE",
+        "Walk Only": "WALK",
+        "Drive Only": "CAR"
+
+    }
+    ,
+    "alertTime": 60000,
+    "active_color": ["33, 150, 243","1.0"],
+    "inactive_color": ["158, 158, 158","1.0"],
+    "colors": [
+        "76, 175, 80",
+        "255, 152, 0",
+        "255, 235, 59",
+        "156, 39, 176",
+        "244, 67, 54"
+    ],
+    "colors_alpha": "0.5"
+}

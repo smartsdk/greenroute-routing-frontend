@@ -1,0 +1,194 @@
+
+<div leaflet
+      leafletFilter
+     [leafletOptions]="options"
+     
+     (leafletMapReady)="onMapReady($event)"
+    
+     [leafletMarkerCluster]="markerClusterData"
+     [leafletMarkerClusterOptions]="markerClusterOptions"
+     (leafletMarkerClusterReady)="markerClusterReady($event)"
+     
+     >
+     <adv-growl  (onMessagesChanges)="onMessages($event)" (onClick)="clickEvent($event)" (onClose)="closeEvent($event)" [style]="{'right':'54px'}" styleClass="leaflet-control" [life]="10000" ></adv-growl>
+     <p-growl [style]="{'right': '65px', 'top': 'auto','bottom':'2vh'}" styleClass="leaflet-control" [(value)]="msgs" sticky="true"></p-growl>
+
+    <div id="toolbar" class="leaflet-control">
+      <div id="toolbar-button" class="leaflet-bar leaflet-control" ></div>
+      <div id="toolbar-content" >
+        <div id="toolbar-form" class="container-fluid">
+          <h4 style="margin-right: 40px">Directions</h4>
+          <form #f="ngForm" (ngSubmit)="f.valid && calculate(f)">
+            <div class="row" >
+              <div class="col-xs-12">
+                <p-autoComplete placeholder="Starting Point" name="fromCoordinates" [(ngModel)]="fromText" [suggestions]="fromResults" (completeMethod)="search($event,'from')" (onSelect)="select($event,'from')" field="display_name" delay="500" minLength="3" inputStyleClass="form-control input-sm" [style]="{'display':'block'}" #from="ngModel" appValidateCoordinates></p-autoComplete>
+                <div *ngIf="from.errors && f.submitted">
+                    <small class="text-danger">No results found!</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row" >
+              <div class="col-xs-12">
+                <p-autoComplete placeholder="Destination" name="toCoordinates" [(ngModel)]="toText" [suggestions]="toResults" (completeMethod)="search($event,'to')" (onSelect)="select($event,'to')" field="display_name" delay="500" minLength="3" inputStyleClass="form-control input-sm" [style]="{'display':'block', 'margin': '10px auto'}" appValidateCoordinates></p-autoComplete>
+                
+              </div>
+            </div>
+            <div class="row" >
+
+              <div class="col-xs-6">
+                <select name="time-mode" class="form-control input-sm" [(ngModel)]="default_tmode" #tm="ngModel">
+                  <option *ngFor="let tmode of timemodes" [value]="tmode">{{tmode}}</option> 
+                </select>
+              </div>
+              <div class="col-xs-6">
+                <button data-toggle="collapse" href="#toolbar-form-options" class="btn btn-default btn-sm" id="options-button">Options</button>
+              </div>
+            </div>
+
+            <div *ngIf="tm.value!=='Leave Now'" class="row" >
+              
+              <div class="col-xs-6">
+                <label>Date: </label>
+                <input [ngModel]="startDate" (ngModelChange)="startDate = $event" type="date" name="startDate" #formDate="ngModel" class="form-control input-sm" required/>
+                <div *ngIf="formDate.errors && (formDate.dirty || f.submitted)">
+                  <div *ngIf="formDate.errors.required" >
+                    <small class="text-danger">This is required!</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <ngb-timepicker [(ngModel)]="startHour" #formTime="ngModel" id="timepicker" name="startHour" required></ngb-timepicker>
+                <div *ngIf="formTime.errors && (formTime.dirty || f.submitted)">
+                  <div *ngIf="formTime.errors.required" >
+                    <small class="text-danger">This is required!</small>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+            <div class="row" id="toolbar-options">  
+              <div id="toolbar-form-options" class="collapse">
+                <div class="col-xs-6 ">
+                  <label >Max Walking (meters): </label>
+                  <input type="number" name="maxWalkDistance" ngModel="1000" class="form-control input-sm"/>
+                </div>
+                <div class="col-xs-6">
+                  <label >Mode: </label>
+                  <select id="form-mode" class="form-control input-sm" data-style-base="btn input-sm" name="mode" [(ngModel)]="default_mode" #m="ngModel" required>
+                      <option *ngFor="let mode of modes" [value]="mode"  >{{mode}}</option>
+                  </select>
+                  <div *ngIf="m.errors &&  f.submitted">
+                    <div *ngIf="m.errors.required" >
+                      <small class="text-danger">Please select at least one</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        
+            <div class="row" >
+              <div class="col-xs-12">
+                <button type="submit" class="btn btn-default btn-sm" id="calculate-button">Calculate</button>
+              </div>
+            </div>
+            
+
+          </form>
+        </div>
+
+        <div id="toolbar-routes" style='display:none;padding:0px' class="container-fluid" >
+          <div class="container-fluid">
+            <h4>Itineraries Found</h4>
+          </div>
+          <div id="toolbar-routes-container" class="panel-info">
+          </div>
+        </div>
+        
+        
+        <div id="toolbar-sensor-info" style='display:none' >
+          <div id="toolbar-sensor-table" *ngIf="sensor" class="container-fluid">
+            <h4>Air Quality Measures</h4>
+            <div class="row">
+              <ul id="toolbar-sensor-ul" class="col-xs-12">
+                <li *ngFor="let data of sensor.pollutants" >
+                  <button class="btn btn-default btn-circle" (mouseover)="showData(data)" (click)="showData(data)" style.border="3px solid {{data.color}}">{{data.tag}}<sub *ngIf="data.tag2">{{data.tag2}}</sub></button>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div id="toolbar-sensor-data" class="col-xs-12">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="toolbar-pollen-info" style='display:none' >
+          <div id="toolbar-pollen-table" *ngIf="pollen_sensor" class="container-fluid">
+            <h4>Aero Allergen Information</h4>
+            <div class="row">
+              <ul id="toolbar-pollen-ul" class="col-xs-12">
+                <li *ngFor="let data of pollen_sensor.pollutants" >
+                  <button class="btn btn-default btn-circle" (mouseover)="showData(data)" (click)="showData(data)" style.border="3px solid {{data.color}}">{{data.tag}}<sub *ngIf="data.tag2">{{data.tag2}}</sub></button>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div id="toolbar-sensor-data" class="col-xs-12">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="toolbar-weather-info" style='display:block' >
+          <div id="toolbar-weather-table" *ngIf="weather_sensor" class="container-fluid">
+            <h4>Weather Information</h4>
+            <div class="row">
+              <ul id="toolbar-weather-ul" class="col-xs-12">
+                <li *ngFor="let data of weather_sensor.pollutants" >
+                  <button class="btn btn-default btn-circle" (mouseover)="showData(data)" (click)="showData(data)" style.border="3px solid {{data.color}}">{{data.tag}}<sub *ngIf="data.tag2">{{data.tag2}}</sub></button>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div id="toolbar-sensor-data" class="col-xs-12">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="toolbar-pois-info" style='display:block' >
+          <div id="toolbar-pois-table" *ngIf="pois_sensor" class="container-fluid">
+            <h4>Point of Interest Information</h4>
+            <div class="row">
+              <ul id="toolbar-pois-ul" class="col-xs-12">
+                <div id="pois_designation"><label>{{pois_sensor.name}}</label></div>
+                <div id="pois_description">{{pois_sensor.description}}</div>
+                <div id="pois_image_container">
+                  <img id="pois_image" src="{{pois_sensor.image}}" alt="POI Image">
+                </div>
+              </ul>
+            </div>
+            <div class="row">
+              <div id="toolbar-sensor-data" class="col-xs-12">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="toolbar-sensor-health" class="container-fluid" style='display:none' >
+          <div *ngIf="sensor"> 
+            <h4>Health Concerns</h4> 
+            <p>{{sensor.health}}</p>           
+          </div>
+        </div>
+          
+      </div>
+    </div>
+    
+</div>
+
+
+
+
+

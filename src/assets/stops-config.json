@@ -1,0 +1,13 @@
+{
+    "wheelchairBoarding": {
+        ""  : "There is no accessibility information for this stop.",
+        "0" : "There is no accessibility information for this stop.",
+        "1" : "At least some vehicles at this stop can be boarded by a rider in a wheelchair.",
+        "2" : "Wheelchair boarding is not possible at this stop."
+    },
+    "locationType": {
+        "" : "A location where passengers board or disembark from a transit vehicle.",
+        "0" : "A location where passengers board or disembark from a transit vehicle.",
+        "1" : "A physical structure or area that contains one or more stop."
+    }
+}
