@@ -121,16 +121,16 @@ export class TrafficService {
     var color = "";
     
     let intensity = sensor['occupancy']
-    if (intensity >= 0 && intensity <4){
+    if (intensity >= 0 && intensity <0.4){
       color = "green"
     }
-    else if (intensity >4 && intensity <6){
+    else if (intensity >0.4 && intensity <0.6){
       color = "yellow"
     }
-    else if (intensity > 6 && intensity < 8){
+    else if (intensity > 0.6 && intensity < 0.8){
       color = "orange"
     }
-    else if (intensity >= 8){
+    else if (intensity >= 0.8){
       color = "red"
     }
 
@@ -181,16 +181,16 @@ export class TrafficService {
           var set_color = "";
           
           let intensity = sensor['occupancy']
-          if (intensity >= 0 && intensity <4){
+          if (intensity >= 0 && intensity <0.4){
             set_color = "green"
           }
-          else if (intensity >4 && intensity <6){
+          else if (intensity >0.4 && intensity <0.6){
             set_color = "yellow"
           }
-          else if (intensity > 6 && intensity < 8){
+          else if (intensity > 0.6 && intensity < 0.8){
             set_color = "orange"
           }
-          else if (intensity >= 8){
+          else if (intensity >= 0.8){
             set_color = "red"
           }
         
