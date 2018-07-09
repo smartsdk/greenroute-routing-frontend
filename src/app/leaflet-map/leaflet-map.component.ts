@@ -308,7 +308,7 @@ export class LeafletMapComponent implements OnInit {
       this.alertService
       .getAlert().subscribe(result => {
         this.alertService.addToCluster(result, this.markerClusterGroupAlert);
-        this.alertService.getUpdates();
+        this.alertService.getUpdates(this.markerClusterGroupAlert);
         this.markerClusterGroupAlert.addTo(this.envLayer);
 
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
