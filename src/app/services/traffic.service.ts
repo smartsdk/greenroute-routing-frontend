@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject }    from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 
 import {
@@ -78,20 +78,20 @@ export class TrafficService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?options=keyValues&type=TrafficFlowObserved&limit=1000' ;
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?options=keyValues&type=TrafficFlowObserved&limit=1000' ;
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
 
   getTraffic(offset) {
     let myHeaders = new Headers(
-      {   
+      {
         'fiware-service': 'default',
         'fiware-servicepath': '/',
         // 'Content-Type': 'application/json',
         // 'Accept': 'application/json',        // 'Access-Control-Allow-Origin': '*'
       });
-  
+
     let options = new RequestOptions({ headers: myHeaders });
     return this.http.get(this.stationsApiUrl+'&orderBy=!dateObserved&offset='+offset, options=options)
       .map((response: Response) => {
@@ -110,16 +110,16 @@ export class TrafficService {
       var popContent;
       if(sensor['address']){
         popContent = '<b> Traffic Information </b><br/>' +
-        '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-        +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+        '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+        +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
         + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
         +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
         '<tr><td><span class="glyphicon glyphicon-road" aria-hidden="true"></span></td>'+'<td> '+sensor['averageVehicleSpeed']+' km/h </td></tr>'+
         '</table>'
         }
-        
+
     var color = "";
-    
+
     let intensity = sensor['occupancy']
     if (intensity >= 0 && intensity <0.4){
       color = "green"
@@ -155,7 +155,7 @@ export class TrafficService {
       }
     }
   )};
-  
+
 
   getUpdates(){
     this._mqttService.observe('trafficflow').subscribe((message:MqttMessage) => {
@@ -170,16 +170,16 @@ export class TrafficService {
           var popContent;
           if(sensor['address']){
             popContent = '<b> Traffic Information </b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
             + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
             '<tr><td><span class="glyphicon glyphicon-road" aria-hidden="true"></span></td>'+'<td> '+sensor['averageVehicleSpeed']+' km/h </td></tr>'+
             '</table>'
           }
-          
+
           var set_color = "";
-          
+
           let intensity = sensor['occupancy']
           if (intensity >= 0 && intensity <0.4){
             set_color = "green"
@@ -193,7 +193,7 @@ export class TrafficService {
           else if (intensity >= 0.8){
             set_color = "red"
           }
-        
+
           segment.setStyle(function updated_style(feature) {
             return {
               opacity: 0.4,
@@ -201,7 +201,7 @@ export class TrafficService {
            };
           }).bindPopup(popContent);
         }
-      
+
     }
   });
 }
@@ -228,7 +228,7 @@ export class TrafficService {
     return (((this.aqiI[i+1]-step-this.aqiI[i])/(arrayValues[i+1]-step-arrayValues[i]))*(value-arrayValues[i]))+this.aqiI[i];
   }
 
-  chooseColor(aqi){    
+  chooseColor(aqi){
     if(aqi===-1 || aqi===Number.NEGATIVE_INFINITY){
       return ['gray','#aaaaaa','Unable to calculate AQI for this station, at least 3 parameters are needed.'];
     }

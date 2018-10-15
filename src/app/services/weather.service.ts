@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 
 import {
@@ -36,7 +36,7 @@ export class WeatherService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?options=keyValues&type=WeatherObserved&limit=1000&orderBy=!dateObserved' ;
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?options=keyValues&type=WeatherObserved&limit=1000&orderBy=!dateObserved';
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
@@ -62,7 +62,7 @@ export class WeatherService {
         return this.http.get('./assets/weather-config.json')
                         .map((res) => res.json()).catch(err => {throw new Error(err.message)});
     }
-  
+
 
   addToCluster(sensorArray, cluster: L.MarkerClusterGroup): void{
     this.getJSON().subscribe(config => {
@@ -81,7 +81,7 @@ export class WeatherService {
                 dataObject["value"] = "-";
 
               dataObject["tag"] = config[key]["tag"];
-    
+
               dataObject["unit"] = config[key]["unit"];
               dataObject["name"] = config[key]["name"];
               dataObject["color"] = "#2a4c82";
@@ -91,27 +91,27 @@ export class WeatherService {
             else{
               console.log("404 pollutant "+key+" not found on "+sensor.id);
             }
-       
+
           }
           sensor["pollutants"] = pollutants
 
           if(sensor['address']){
             popContent = '<b> Weather Information</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
             + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
             '</table>'
             }
-          
-  
+
+
           var marker = L.marker( [sensor['location'].coordinates[1],sensor['location'].coordinates[0]], {
             icon: this["pin_weather"]
           }).bindPopup(popContent);
-        
 
 
-        
+
+
         this.markersMap[sensor.id] = marker;
 
         marker.addEventListener("popupopen", (e) => {
@@ -121,7 +121,7 @@ export class WeatherService {
           this.selectedSensorSource.next(null);
         });
         cluster.addLayer(marker);
-     
+
       }
 
       }});
@@ -130,7 +130,7 @@ export class WeatherService {
   getUpdates() {
     var pollutants = [];
     this._mqttService.observe('weatherobserved').subscribe((message:MqttMessage) => {
-      var updated = <Weather[]> JSON.parse(message.payload.toString()).data; 
+      var updated = <Weather[]> JSON.parse(message.payload.toString()).data;
       console.log("--------------------UPDATED WEATHER-------------------\n");
       console.log(updated)
       console.log("-----------\n")
@@ -146,23 +146,23 @@ export class WeatherService {
                 else
                   dataObject["value"] = "-";
                 dataObject["tag"] = config[key]["tag"];
-       
+
                 dataObject["unit"] = config[key]["unit"];
                 dataObject["name"] = config[key]["name"];
                 dataObject["color"] = "#2e61b2";
-  
+
                 pollutants.push(dataObject);
               }
               else{
                 console.log("404 pollutant "+key+" not found on "+sensor.id);
               }
-         
+
             }
             sensor["pollutants"] = pollutants
-      
+
             var popContent = '<b> Weather Information</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
             + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
             +'</table>'

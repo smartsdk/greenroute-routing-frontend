@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject }    from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 import {
   MqttMessage,
@@ -76,19 +76,19 @@ export class AirControlService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?options=keyValues&type=AirQualityObserved&limit=100&orderBy=!dateObserved' ;
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?options=keyValues&type=AirQualityObserved&limit=100&orderBy=!dateObserved' ;
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
   getAirControl() {
     let myHeaders = new Headers(
-      {   
+      {
         'fiware-service': 'default',
         'fiware-servicepath': '/',
         // 'Content-Type': 'application/json',
         // 'Accept': 'application/json',        // 'Access-Control-Allow-Origin': '*'
       });
-  
+
     let options = new RequestOptions({ headers: myHeaders });
 
     return this.http.get(this.stationsApiUrl, options=options)
@@ -131,17 +131,17 @@ export class AirControlService {
                 pollutantAQI = this.calculateAQI(dataObject["value"],key,config[key]["array"],config[key]["step"]);
                 if(pollutantAQI!==-1 && pollutantAQI!==Number.NEGATIVE_INFINITY)
                   dataObject["aqi"] = Math.round(pollutantAQI);
- 
+
                 else{
                   dataObject["aqi"] = "-";
                 }
-                
+
                 if (isNaN(pollutantAQI))
                   pollutantAQI = -1;
                 aqis.push(pollutantAQI); // deixo o -1 para fazer o maxAqi
               }
-              
-              
+
+
               dataObject["color"] = this.chooseColor(pollutantAQI)[1];
               pollutants.push(dataObject);
             }
@@ -162,18 +162,18 @@ export class AirControlService {
           var popContent;
           if(sensor['address']){
             popContent = '<b> Air Quality Station</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
             + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
             '<tr><td>AQI</td><td>'+sensor['AQI']+'</td></tr>'+
             '</table>'
             }
-          
+
           var marker = L.marker( [sensor['location'].coordinates[1],sensor['location'].coordinates[0]], {
             icon: this["pin_"+maxAqiColors[0]]
           }).bindPopup(popContent);
-          
+
           this.markersMap[sensor.id] = marker;
 
           marker.addEventListener("popupopen", (e) => {
@@ -187,7 +187,7 @@ export class AirControlService {
 
       }});
   }
-  
+
   getUpdates(){
     this._mqttService.observe('airquality').subscribe((message:MqttMessage) => {
       var updated = <AirControl[]> JSON.parse(message.payload.toString()).data;
@@ -245,15 +245,15 @@ export class AirControlService {
           var maxAqiColors = this.chooseColor(maxAqi);
 
           var popContent = '<b> Air Quality Station</b><br/>' +
-          '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-          +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+          '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+          +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
           + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
           +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
           '<tr><td>AQI</td><td>'+sensor['AQI']+'</td></tr>'+
           '</table>'
 
           marker.setIcon(this["pin_"+maxAqiColors[0]]).bindPopup(popContent);
-          
+
         }
       );}
     }
@@ -282,7 +282,7 @@ export class AirControlService {
     return (((this.aqiI[i+1]-step-this.aqiI[i])/(arrayValues[i+1]-step-arrayValues[i]))*(value-arrayValues[i]))+this.aqiI[i];
   }
 
-  chooseColor(aqi){    
+  chooseColor(aqi){
     if(aqi===-1 || aqi===Number.NEGATIVE_INFINITY){
       return ['gray','#aaaaaa','Unable to calculate AQI for this station, at least 3 parameters are needed.'];
     }

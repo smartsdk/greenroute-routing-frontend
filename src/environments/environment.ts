@@ -4,5 +4,7 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  backend_url: 'https://api.greenroutesdk.com.mx/back-sdk/',
+  orion_url: 'https://orion.greenroutesdk.com.mx'
 };

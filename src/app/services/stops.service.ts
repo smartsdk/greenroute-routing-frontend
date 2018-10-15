@@ -10,7 +10,7 @@ import { Stop } from '../models/stop';
 
 @Injectable()
 export class StopsService {
-  private stopsApiUrl = "http://routing.smartsdk.ubiwhere.com/otp/routers/default/index/stops/";
+  private stopsApiUrl = "https://routing.smartsdk.ubiwhere.com/otp/routers/default/index/stops/";
   constructor(private http: Http) { }
 
 
