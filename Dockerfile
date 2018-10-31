@@ -5,7 +5,7 @@ RUN npm i && mkdir /ng-app && cp -R ./node_modules ./ng-app
 
 WORKDIR /ng-app
 COPY . .
-RUN $(npm bin)/ng build --env prod
+RUN $(npm bin)/ng build --prod
 
 ### STAGE 2: Setup ###
 FROM nginx:1.13.6-alpine
