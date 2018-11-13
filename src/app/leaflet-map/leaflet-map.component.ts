@@ -588,12 +588,117 @@ export class LeafletMapComponent implements OnInit {
         });
         j++;
       }
+
+      let shareRoute = 0;
+      let classification = 0;
+
+      let divClassification = L.DomUtil.create('div', '', navContent);
+      divClassification.id = "classification-route-div";
+
+      let classification1 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      classification1.id = "classification"
+
+      classification1.addEventListener('click',()=>{
+        if (classification1.style.color != 'orange' || (
+           classification1.style.color == 'orange' && (classification2.style.color == 'orange' || 
+           classification3.style.color == 'orange' || classification4.style.color == 'orange' || 
+           classification5.style.color == 'orange' ))
+          ) {
+          classification = 1;
+          classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+
+        } else {
+          classification = 0;
+          classification1.style.color = '#333';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+        }
+        
+      });
+
+      let classification2 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      classification2.id = "classification"
+
+      classification2.addEventListener('click',()=>{
+        classification = 2;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = '#333';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      let classification3 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      classification3.id = "classification"
+
+      classification3.addEventListener('click',()=>{
+        classification = 3;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      let classification4 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      classification4.id = "classification"
+
+      classification4.addEventListener('click',()=>{
+        classification = 4;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = '#333';
+
+      });
+
+      let classification5 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      classification5.id = "classification"
+
+      classification5.addEventListener('click',()=>{
+        classification = 5;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = 'orange';
+
+      
+      });
+
       let divSaveButton = L.DomUtil.create('div', '', navContent);
       divSaveButton.id = "save-route-div";
+
+      let shareRouteButton = L.DomUtil.create('a', 'btn btn-primary btn-sm', divSaveButton);
+      shareRouteButton.id = "share-route-button"
+      shareRouteButton.innerHTML = "<span class='glyphicon glyphicon-share' aria-hidden='true'></span> Share"
+
+      shareRouteButton.addEventListener('click',()=>{
+
+        if (shareRouteButton.style.backgroundColor != 'gray'){
+          shareRouteButton.style.backgroundColor = 'gray';
+          shareRouteButton.style.borderColor = 'gray';
+          shareRoute = 1;
+        }
+        else {
+          shareRouteButton.style.backgroundColor = '#337ab7';
+          shareRouteButton.style.borderColor = '#337ab7';
+          shareRoute = 0;
+        }
+        
+      });
+
       
-      let saveRouteButton = L.DomUtil.create('a', 'btn btn-default btn-sm', divSaveButton);
+      let saveRouteButton = L.DomUtil.create('a', 'btn btn-success btn-sm', divSaveButton);
       saveRouteButton.id = "save-route-button"
-      saveRouteButton.innerHTML = "Save Itinerary"
+      saveRouteButton.innerHTML = "<span class='glyphicon glyphicon-floppy-disk' aria-hidden='true'></span> Save Itinerary"
 
       saveRouteButton.addEventListener('click',()=>{
         let fromPlace = result['plan']['fromPlace'];
@@ -607,7 +712,9 @@ export class LeafletMapComponent implements OnInit {
           "arriveBy": arriveBy,
           "toPlace": toPlace,
           "fromPlace": fromPlace,
-          "segments": segments
+          "segments": segments,
+          "classification": classification,
+          "share": shareRoute
         }
         
         let save_result = null;
