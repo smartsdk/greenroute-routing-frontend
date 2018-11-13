@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 
 import {
@@ -36,8 +36,8 @@ export class PoisService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?type=PointOfInterest&options=keyValues&orderBy=dateCreated&limit=1000' ;
- 
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?type=PointOfInterest&options=keyValues&orderBy=dateCreated&limit=1000' ;
+
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
@@ -64,7 +64,7 @@ export class PoisService {
   addToCluster(sensorArray, cluster: L.MarkerClusterGroup): void{
     for (let sensor of sensorArray){
       if (sensor['location']) {
-        
+
         var popContent;
 
         if (sensor['url']) {
@@ -72,20 +72,20 @@ export class PoisService {
         }
         if(sensor['location']){
           popContent = '<b> Point of Interest Information</b><br/>' +
-          '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
+          '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
           +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['addressLocality'] + '</td></tr>'
           +'<tr><td><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></td>'+'<td> ' + sensor['name'] + '</td></tr>'
           +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateCreated'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
           '</table>'
         }
-        
+
         var marker = L.marker( [parseFloat(sensor['location']['coordinates'][1]),parseFloat(sensor['location']['coordinates'][0])], {
           icon: this["pin_pois"]
         }).bindPopup(popContent);
-      
 
 
-      
+
+
         this.markersMap[sensor.id] = marker;
 
         marker.addEventListener("popupopen", (e) => {
@@ -95,7 +95,7 @@ export class PoisService {
           this.selectedSensorSource.next(null);
         });
         cluster.addLayer(marker);
-   
+
       }
 
     }

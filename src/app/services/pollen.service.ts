@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 
 import {
@@ -77,7 +77,7 @@ export class PollenService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?options=keyValues&type=AeroAllergenObserved&limit=1000&orderBy=!dateObserved' ;
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?options=keyValues&type=AeroAllergenObserved&limit=1000&orderBy=!dateObserved' ;
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
@@ -127,10 +127,10 @@ export class PollenService {
         if(sensor['location']){
           var aqis =  [];
           var pollutants = [];
-          
-          
+
+
           var popContent;
-          
+
           var pollens = []
           var pollens_display = ''
           var highest_concentration = -1
@@ -138,10 +138,10 @@ export class PollenService {
 
           for(var key in sensor){
             if (key.endsWith('Level') && sensor[key]!= "null"){
-    
+
               let value = sensor[key]
               let name = key
-              
+
               pollens.push(key);
               pollens_display += '<tr><td>'+key+'</td><td>'+value+'</td></tr> '
 
@@ -150,7 +150,7 @@ export class PollenService {
                 dataObject["value"] = value;
               else
                 dataObject["value"] = "-";
-              
+
               name[0].toUpperCase();
 
               dataObject["tag"] = key.slice(0,3).replace(/\b\w/g, l => l.toUpperCase());
@@ -159,12 +159,12 @@ export class PollenService {
               dataObject["name"] = key.replace(/\b\w/g, l => l.toUpperCase()).replace('Level', '').replace('_', ' Level');
 
               var pollutantAQI=-1; // para a os que nao se calcula aqi terem a mesma cor que os sem valores, ie, gray
-              
+
               dataObject["aqi"] = "";
-            
+
               let color = this.concentration_map[value]["color"]
               dataObject["color"] = color
-              
+
               let concentration = this.concentration_map[value]["level"]
               if(concentration > highest_concentration){
                 highest_concentration = concentration
@@ -177,18 +177,18 @@ export class PollenService {
 
           if(sensor['address']){
             popContent = '<b> Pollen Information</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+            +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
             + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
             //+pollens_display+
             '</table>'
             }
-          
+
           var marker = L.marker( [sensor['location'].coordinates[1],sensor['location'].coordinates[0]], {
             icon: this["pin_"+marker_color]
           }).bindPopup(popContent);
-          
+
           this.markersMap[sensor.id] = marker;
 
           marker.addEventListener("popupopen", (e) => {
@@ -216,44 +216,44 @@ export class PollenService {
             if(sensor['location']){
               var aqis =  [];
               var pollutants = [];
-              
-              
+
+
               var popContent;
-              
+
               var pollens = []
               var pollens_display = ''
               var highest_concentration = -1
               var marker_color = "green"
-    
+
               for(var key in sensor){
                 if (key.endsWith('Level') && sensor[key]!= "null"){
-        
+
                   let value = sensor[key]
                   let name = key
-                  
+
                   pollens.push(key);
                   pollens_display += '<tr><td>'+key+'</td><td>'+value+'</td></tr> '
-    
+
                   var dataObject={};
                   if(value!=="null")
                     dataObject["value"] = value;
                   else
                     dataObject["value"] = "-";
-                  
+
                   name[0].toUpperCase();
-    
+
                   dataObject["tag"] = key.slice(0,3).replace(/\b\w/g, l => l.toUpperCase());
-    
+
                   dataObject["unit"] = "";
                   dataObject["name"] = key.replace(/\b\w/g, l => l.toUpperCase()).replace('Level', '').replace('_', ' Level');
-    
+
                   var pollutantAQI=-1; // para a os que nao se calcula aqi terem a mesma cor que os sem valores, ie, gray
-                  
+
                   dataObject["aqi"] = "";
-                  
+
                   let color = this.concentration_map[value]["color"]
                   dataObject["color"] = color
-                  
+
                   let concentration = this.concentration_map[value]["level"]
                   if(concentration > highest_concentration){
                     highest_concentration = concentration
@@ -263,11 +263,11 @@ export class PollenService {
                 }
               }
               sensor["pollutants"] = pollutants
-    
+
               if(sensor['address']){
                 popContent = '<b> Pollen Information</b><br/>' +
-                '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>' 
-                +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality'] 
+                '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+                +'<tr><td><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>'+'<td> ' + sensor['address']['streetAddress'] + ', ' + sensor['address']['addressLocality']
                 + ', ' + sensor['address']['addressCountry'] + '</td></tr>'
                 +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'+
                 //+pollens_display+
@@ -303,7 +303,7 @@ export class PollenService {
     return (((this.aqiI[i+1]-step-this.aqiI[i])/(arrayValues[i+1]-step-arrayValues[i]))*(value-arrayValues[i]))+this.aqiI[i];
   }
 
-  chooseColor(aqi){    
+  chooseColor(aqi){
     if(aqi===-1 || aqi===Number.NEGATIVE_INFINITY){
       return ['gray','#aaaaaa','Unable to calculate AQI for this station, at least 3 parameters are needed.'];
     }

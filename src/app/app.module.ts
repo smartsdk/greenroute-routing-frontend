@@ -23,17 +23,18 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {
   MqttMessage,
   MqttModule,
-  MqttService
+  MqttService,
+  MqttServiceOptions
 } from 'ngx-mqtt';
 
 import { DatePipe } from "@angular/common";
 import { ValidateCoordinatesDirective } from './directives/validate-coordinates.directive';
 
-
-export const MQTT_SERVICE_OPTIONS = {
+export const MQTT_SERVICE_OPTIONS : MqttServiceOptions = {
   hostname: 'ponte.iot.citibrain.com',
-  port: 80,
-  path: '/resources'
+  port: 443,
+  path: '/resources',
+  protocol: "wss"
 };
 
 
@@ -41,9 +42,22 @@ export function mqttServiceFactory() {
   return new MqttService(MQTT_SERVICE_OPTIONS);
 }
 
+// export const MQTT_SERVICE_OPTIONS = {
+//   hostname: 'ponte.iot.citibrain.com',
+//   port: 443,
+//   path: '/resources'
+// };
+//
+//
+// export function mqttServiceFactory() {
+//   return new MqttService(MQTT_SERVICE_OPTIONS);
+// }
+
 import {GrowlModule} from 'primeng/components/growl/growl';
 import {AutoCompleteModule} from 'primeng/components/autocomplete/autocomplete';
 import {AdvGrowlModule} from 'primeng-advanced-growl';
+
+import { CookieService, CookieOptions } from 'angular2-cookie/core';
 
 
 @NgModule({
@@ -69,7 +83,9 @@ import {AdvGrowlModule} from 'primeng-advanced-growl';
     AutoCompleteModule
   ],
   providers: [
-    DatePipe
+    DatePipe,
+    CookieService,
+    { provide: CookieOptions, useValue: {} }
   ],
   bootstrap: [AppComponent]
 })

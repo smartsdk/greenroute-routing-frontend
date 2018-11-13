@@ -3,6 +3,8 @@ import { Observable } from 'rxjs/Observable';
 
 
 import { Http , Response, URLSearchParams, RequestOptions } from '@angular/http';
+import { CookieService } from 'angular2-cookie/core';
+import { environment } from '../../environments/environment';
 
 import 'rxjs/add/operator/toPromise';
 
@@ -10,29 +12,33 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class RoutesService {
 
-  constructor(private http:Http) { }
+  constructor(private http:Http, private cookieService: CookieService) { }
 
   private endPoint = 'https://routing-plan.smartsdk.ubiwhere.com/api/routing/';
   private nominatim = 'https://nominatim.smartsdk.ubiwhere.com/search.php';
   private nominatimReverse = 'https://nominatim.smartsdk.ubiwhere.com/reverse.php';
-  private greenRouteAPI = 'https://missing.url/'
-  
-  
+  private greenRouteAPI = environment.backend_url;
+
+
   calculate(obj): Observable<any>{
     let params = new URLSearchParams();
     for(let key in obj){
-      params.set(key,obj[key]);    
+      params.set(key,obj[key]);
     }
     return this.http.get(this.endPoint,{params:params}).map(res => res.json())
     .catch(err=>{
       throw new Error(err.json().detail.msg);
     });
-    
+
   }
 
   saveRoute(input){
-    let userToken = sessionStorage.getItem("token-info.token")
-    let userID = sessionStorage.getItem('id')
+    var tokeninfo = JSON.parse(this.cookieService.getObject('token-info').toString());
+    var userID = tokeninfo.id;
+    var userToken = tokeninfo.tokenInfo.token;
+
+    sessionStorage.setItem('userID', userID);
+    sessionStorage.setItem('userToken', userToken);
 
     let SaveRouteURL = this.greenRouteAPI + 'trips/user/' + userID
 

@@ -25,6 +25,7 @@
     "@asymmetrik/angular2-leaflet": "2.1.5",
     "@asymmetrik/angular2-leaflet-markercluster": "0.0.4",
     "@ng-bootstrap/ng-bootstrap": "1.0.0-beta.6",
+    "angular2-cookie": "^1.2.4",
     "core-js": "2.4.1",
     "font-awesome": "4.7.0",
     "leaflet": "1.1.0",

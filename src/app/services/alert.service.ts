@@ -8,7 +8,7 @@ import 'rxjs/add/operator/catch';
 
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-
+import { environment } from '../../environments/environment';
 
 
 import {
@@ -60,7 +60,7 @@ export class AlertService {
 
   private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-  private stationsApiUrl = 'http://79.109.226.53:1026/v2/entities/?type=Alert&options=keyValues&limit=1000&orderBy=!dateObserved' ;
+  private stationsApiUrl = environment.orion_url + '/v2/entities/?type=Alert&options=keyValues&limit=1000&orderBy=!dateObserved' ;
 
   constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
@@ -89,20 +89,20 @@ export class AlertService {
           var popContent;
 
             popContent = '<b> Alert Information</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>' 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateTime'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></td>'+'<td> ' + sensor['alertSource'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></td>'+'<td> ' + sensor['category'].charAt(0).toUpperCase() + sensor['category'].slice(1) +  " - " + sensor['subCategory'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span></td>'+'<td> ' + sensor['description'] + '</td></tr>'
             '</table>'
-            
+
           if (sensor['severity'] == null){
             sensor['severity'] = "informational"
           }
           var marker = L.marker( [parseFloat(sensor['location']['coordinates'][0]),parseFloat(sensor['location']['coordinates'][1])], {
             icon: this["pin_alert_" + sensor['severity']]
           }).bindPopup(popContent);
-        
+
         this.markersMap[sensor.id] = marker;
 
         marker.addEventListener("popupopen", (e) => {
@@ -112,7 +112,7 @@ export class AlertService {
           this.selectedSensorSource.next(null);
         });
         cluster.addLayer(marker);
-     
+
       }
 
       }
@@ -121,7 +121,7 @@ export class AlertService {
   getUpdates(cluster: L.MarkerClusterGroup) {
     var pollutants = [];
     this._mqttService.observe('alertsobserved').subscribe((message:MqttMessage) => {
-      var updated = <Alert[]> JSON.parse(message.payload.toString()).data; 
+      var updated = <Alert[]> JSON.parse(message.payload.toString()).data;
       console.log("--------------------UPDATED ALERT-------------------\n");
       console.log(updated)
       console.log("-----------\n")
@@ -129,13 +129,13 @@ export class AlertService {
         var marker: L.Marker = this.markersMap[sensor.id];
         if(marker){
          var popContent = '<b> Alert Information</b><br/>' +
-            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>' 
+            '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></td>'+'<td> ' + sensor['alertSource'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></td>'+'<td> ' + sensor['category'].charAt(0).toUpperCase() + sensor['category'].slice(1) +  " - " + sensor['subCategory'] + '</td></tr>'
             +'<tr><td><span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span></td>'+'<td> ' + sensor['description'] + '</td></tr>'
             '</table>'
-          
+
           if (sensor['severity'] == null){
             sensor['severity'] = "informational"
           }
@@ -148,17 +148,17 @@ export class AlertService {
           let popContent;
 
           popContent = '<b> Alert Information</b><br/>' +
-              '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>' 
+              '<br/><table class="table">'+ '<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id'] + '</td></tr>'
               +'<tr><td><span class="glyphicon glyphicon-time" aria-hidden="true"></span></td>'+'<td> ' + this.datePipe.transform(sensor['dateObserved'],"dd-MM-yy HH:mm:ss") + '</td></tr>'
               +'<tr><td><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></td>'+'<td> ' + sensor['alertSource'] + '</td></tr>'
               +'<tr><td><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></td>'+'<td> ' + sensor['category'].charAt(0).toUpperCase() + sensor['category'].slice(1) +  " - " + sensor['subCategory'] + '</td></tr>'
               +'<tr><td><span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span></td>'+'<td> ' + sensor['description'] + '</td></tr>'
               '</table>'
-          
+
           if (sensor['severity'] == null){
             sensor['severity'] = "informational"
           }
-          
+
           var marker = L.marker( [sensor['location'].coordinates[0],sensor['location'].coordinates[1]], {
             icon: this["pin_alert_" + sensor['severity']]
           }).bindPopup(popContent);
