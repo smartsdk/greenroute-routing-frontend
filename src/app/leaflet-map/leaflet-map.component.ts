@@ -5,6 +5,8 @@ import { Observable } from 'rxjs/Observable';
 
 import { StopsService } from '../services/stops.service';
 import { AirControlService } from '../services/air-control.service';
+import { VehiclePositionService } from '../services/vehicles-position.service';
+import { MyItinerariesService } from '../services/my-itineraries.service';
 import { PollenService } from '../services/pollen.service';
 import { WeatherService } from '../services/weather.service';
 import { PoisService } from '../services/pois.service';
@@ -48,6 +50,8 @@ import { ViewChild } from '@angular/core';
     WeatherService,
     PoisService,
     AlertService,
+    VehiclePositionService,
+    MyItinerariesService,
   ]
 })
 
@@ -157,6 +161,8 @@ export class LeafletMapComponent implements OnInit {
     private weatherService: WeatherService,
     private poisService: PoisService,
     private alertService: AlertService,
+    private vehiclePositionService: VehiclePositionService,
+    private myItinerariesService: MyItinerariesService,
     private trafficService: TrafficService,
     private routesService: RoutesService, 
     private map3dService: Map3dService, 
@@ -313,6 +319,18 @@ export class LeafletMapComponent implements OnInit {
 
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
 
+      this.vehiclePositionService
+      .getVehiclesPosition().subscribe(result => {
+        this.vehiclePositionService.addToMap(result, this.map);
+        this.vehiclePositionService.getUpdates(this.map);
+        this.markerClusterGroupAlert.addTo(this.envLayer);
+
+      }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
+      
+      this.myItinerariesService
+      .getUserItineraries().subscribe(result => {
+        console.log("ITINERARIES");
+      }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
 
       var trafficLayer = L.layerGroup([])
       let offset = 0
@@ -592,10 +610,10 @@ export class LeafletMapComponent implements OnInit {
       let shareRoute = 0;
       let classification = 0;
 
-      let divClassification = L.DomUtil.create('div', '', navContent);
-      divClassification.id = "classification-route-div";
+      let divSaveButton = L.DomUtil.create('div', '', navContent);
+      divSaveButton.id = "save-route-div";
 
-      let classification1 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      let classification1 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification1.id = "classification"
 
       classification1.addEventListener('click',()=>{
@@ -622,7 +640,7 @@ export class LeafletMapComponent implements OnInit {
         
       });
 
-      let classification2 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      let classification2 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification2.id = "classification"
 
       classification2.addEventListener('click',()=>{
@@ -634,7 +652,7 @@ export class LeafletMapComponent implements OnInit {
         classification5.style.color = '#333';
       });
 
-      let classification3 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      let classification3 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification3.id = "classification"
 
       classification3.addEventListener('click',()=>{
@@ -646,7 +664,7 @@ export class LeafletMapComponent implements OnInit {
         classification5.style.color = '#333';
       });
 
-      let classification4 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      let classification4 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification4.id = "classification"
 
       classification4.addEventListener('click',()=>{
@@ -659,7 +677,7 @@ export class LeafletMapComponent implements OnInit {
 
       });
 
-      let classification5 = L.DomUtil.create('span', 'fa fa-star', divClassification);
+      let classification5 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification5.id = "classification"
 
       classification5.addEventListener('click',()=>{
@@ -673,8 +691,6 @@ export class LeafletMapComponent implements OnInit {
       
       });
 
-      let divSaveButton = L.DomUtil.create('div', '', navContent);
-      divSaveButton.id = "save-route-div";
 
       let shareRouteButton = L.DomUtil.create('a', 'btn btn-primary btn-sm', divSaveButton);
       shareRouteButton.id = "share-route-button"
@@ -1092,6 +1108,10 @@ export class LeafletMapComponent implements OnInit {
         }
       }
     }
+  }
+
+  getMyItineraries(event){
+    console.log(event)
   }
 
   search(event,func){
