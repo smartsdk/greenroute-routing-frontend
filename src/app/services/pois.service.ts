@@ -27,10 +27,10 @@ export class PoisService {
   selectedSensor$ = this.selectedSensorSource.asObservable();
 
   pin_pois = L.icon({
-    iconUrl: "../assets/pois.svg", // From https://www.iconfinder.com/search/?price=free
-    iconSize:     [30, 30], // size of the icon
-    iconAnchor:   [15, 30], // point of the icon which will correspond to marker's location
-    popupAnchor:  [0, -30] // point from which the popup should open relatixe to the iconAnchor
+    iconUrl: "../assets/pois.png", // From https://www.iconfinder.com/search/?price=free
+    iconSize:     [35, 38], // size of the icon
+    iconAnchor:   [17.5, 38], // point of the icon which will correspond to marker's location
+    popupAnchor:  [0, -38] // point from which the popup should open relatixe to the iconAnchor
   });
 
 
