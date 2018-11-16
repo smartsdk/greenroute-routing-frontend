@@ -37,9 +37,6 @@ export class RoutesService {
     var userID = tokeninfo.id;
     var userToken = tokeninfo.tokenInfo.token;
 
-    sessionStorage.setItem('userID', userID);
-    sessionStorage.setItem('userToken', userToken);
-
     let SaveRouteURL = this.greenRouteAPI + 'trips/user/' + userID
 
     return fetch(SaveRouteURL, {
