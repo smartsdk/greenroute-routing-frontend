@@ -329,8 +329,24 @@ export class LeafletMapComponent implements OnInit {
       
       this.myItinerariesService
       .getUserItineraries().subscribe(result => {
-        console.log("ITINERARIES");
+        var myItineraries = L.DomUtil.get('toolbar-my-itineraries');
+        var container = L.DomUtil.get('toolbar-my-itineraries-container');
+        let list = L.DomUtil.create('div', 'list-group', container);
+
+        for (var it in result){
+          let itinerary = L.DomUtil.create('a', 'list-group-item', list);
+          itinerary.id = 'itinerary'+it;
+          itinerary.style.borderRadius = '0%';
+          itinerary.style.color = 'black';
+          itinerary.style.cursor = 'pointer';
+          itinerary.style.backgroundColor = '#FFFFFF';
+          itinerary.style.padding = '10px 3%';
+          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+          itinerary.innerHTML = "<b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
+        }
+        myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
+
 
       var trafficLayer = L.layerGroup([])
       let offset = 0
@@ -607,7 +623,7 @@ export class LeafletMapComponent implements OnInit {
         j++;
       }
 
-      let shareRoute = 0;
+      let shareRoute = false;
       let classification = 0;
 
       let divSaveButton = L.DomUtil.create('div', '', navContent);
@@ -701,12 +717,12 @@ export class LeafletMapComponent implements OnInit {
         if (shareRouteButton.style.backgroundColor != 'gray'){
           shareRouteButton.style.backgroundColor = 'gray';
           shareRouteButton.style.borderColor = 'gray';
-          shareRoute = 1;
+          shareRoute = true;
         }
         else {
           shareRouteButton.style.backgroundColor = '#337ab7';
           shareRouteButton.style.borderColor = '#337ab7';
-          shareRoute = 0;
+          shareRoute = false;
         }
         
       });
@@ -722,15 +738,15 @@ export class LeafletMapComponent implements OnInit {
         let arriveBy = result['requestParameters']['arriveBy'];
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
-        
+
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,
           "toPlace": toPlace,
           "fromPlace": fromPlace,
           "segments": segments,
-          "classification": classification,
-          "share": shareRoute
+          "rate": classification,
+          "shared": shareRoute
         }
         
         let save_result = null;
@@ -1110,9 +1126,6 @@ export class LeafletMapComponent implements OnInit {
     }
   }
 
-  getMyItineraries(event){
-    console.log(event)
-  }
 
   search(event,func){
     var regex = new RegExp(/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/)
