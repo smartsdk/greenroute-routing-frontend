@@ -1,5 +1,6 @@
 import { Injectable  } from '@angular/core';
 import { Http , Response, RequestOptions, Headers } from '@angular/http';
+import { CookieService } from 'angular2-cookie/core';
 import { DatePipe } from "@angular/common";
 
 import 'rxjs/add/operator/map';
@@ -21,19 +22,24 @@ import { Itineraries } from '../models/itineraries';
 
 @Injectable()
 export class MyItinerariesService {
-    private url = 'https://google.com' ;
+    private greenRouteAPI = environment.backend_url;
 
-    constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
+    constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe, private cookieService: CookieService) { }
 
     getUserItineraries(){
+        var tokeninfo = JSON.parse(this.cookieService.getObject('token-info').toString());
+        var userID = tokeninfo.id;
+        var userToken = tokeninfo.tokenInfo.token;
+
         let myHeaders = new Headers({
-            'fiware-service': 'default',
-            'fiware-servicepath': '/',
+            'X-Auth-Token': userToken,
+            'Content-Type': 'application/json'
         });
 
         let options = new RequestOptions({ headers: myHeaders });
+        let itinerariesUrl = this.greenRouteAPI + 'trips/user/' + userID;
 
-        return this.http.get(this.url, options=options).map((response: Response) => {
+        return this.http.get(itinerariesUrl, options=options).map((response: Response) => {
             return <Itineraries[]> response.json();
         }).catch(err=>{throw new Error(err.message)});
     }
