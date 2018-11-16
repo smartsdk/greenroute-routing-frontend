@@ -22,6 +22,15 @@ h4{
   flex-grow: 1;
 }
 
+#list-group-item-override {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+  margin-bottom: -1px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
 #toolbar-sensor-ul li button{
   width: 50px;
   height: 50px;
@@ -128,7 +137,7 @@ h4{
 #toolbar-content{
   margin-bottom: 100px;
 }
-#toolbar-form,::ng-deep #toolbar-routes-container{
+#toolbar-form,::ng-deep #toolbar-routes-container, #toolbar-my-itineraries-container{
   padding-top: 5px;
 }
 
