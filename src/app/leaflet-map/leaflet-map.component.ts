@@ -5,6 +5,8 @@ import { Observable } from 'rxjs/Observable';
 
 import { StopsService } from '../services/stops.service';
 import { AirControlService } from '../services/air-control.service';
+import { VehiclePositionService } from '../services/vehicles-position.service';
+import { MyItinerariesService } from '../services/my-itineraries.service';
 import { PollenService } from '../services/pollen.service';
 import { WeatherService } from '../services/weather.service';
 import { PoisService } from '../services/pois.service';
@@ -48,6 +50,8 @@ import { ViewChild } from '@angular/core';
     WeatherService,
     PoisService,
     AlertService,
+    VehiclePositionService,
+    MyItinerariesService,
   ]
 })
 
@@ -157,6 +161,8 @@ export class LeafletMapComponent implements OnInit {
     private weatherService: WeatherService,
     private poisService: PoisService,
     private alertService: AlertService,
+    private vehiclePositionService: VehiclePositionService,
+    private myItinerariesService: MyItinerariesService,
     private trafficService: TrafficService,
     private routesService: RoutesService, 
     private map3dService: Map3dService, 
@@ -311,6 +317,36 @@ export class LeafletMapComponent implements OnInit {
         this.alertService.getUpdates(this.markerClusterGroupAlert);
         this.markerClusterGroupAlert.addTo(this.envLayer);
 
+      }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
+
+      this.vehiclePositionService
+      .getVehiclesPosition().subscribe(result => {
+        this.vehiclePositionService.addToMap(result, this.map);
+        this.vehiclePositionService.getUpdates(this.map);
+        this.markerClusterGroupAlert.addTo(this.envLayer);
+
+      }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
+      
+      this.myItinerariesService
+      .getUserItineraries().subscribe(result => {
+        var myItineraries = L.DomUtil.get('toolbar-my-itineraries');
+        var container = L.DomUtil.get('toolbar-my-itineraries-container');
+        let list = L.DomUtil.create('div', 'list-group', container);
+
+        for (var it in result){
+          let itinerary = L.DomUtil.create('a', 'list-group-item', list);
+          itinerary.id = 'itinerary'+it;
+          itinerary.style.borderRadius = '0%';
+          itinerary.style.color = 'black';
+          itinerary.style.cursor = 'pointer';
+          itinerary.style.backgroundColor = '#FFFFFF';
+          itinerary.style.padding = '10px 3%';
+          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+          itinerary.style.borderRight = '0px';
+          itinerary.style.borderLeft = '0px';
+          itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
+        }
+        myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
 
 
@@ -588,12 +624,115 @@ export class LeafletMapComponent implements OnInit {
         });
         j++;
       }
+
+      let shareRoute = false;
+      let classification = 0;
+
       let divSaveButton = L.DomUtil.create('div', '', navContent);
       divSaveButton.id = "save-route-div";
+
+      let classification1 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
+      classification1.id = "classification"
+
+      classification1.addEventListener('click',()=>{
+        if (classification1.style.color != 'orange' || (
+           classification1.style.color == 'orange' && (classification2.style.color == 'orange' || 
+           classification3.style.color == 'orange' || classification4.style.color == 'orange' || 
+           classification5.style.color == 'orange' ))
+          ) {
+          classification = 1;
+          classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+
+        } else {
+          classification = 0;
+          classification1.style.color = '#333';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+        }
+        
+      });
+
+      let classification2 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
+      classification2.id = "classification"
+
+      classification2.addEventListener('click',()=>{
+        classification = 2;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = '#333';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      let classification3 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
+      classification3.id = "classification"
+
+      classification3.addEventListener('click',()=>{
+        classification = 3;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      let classification4 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
+      classification4.id = "classification"
+
+      classification4.addEventListener('click',()=>{
+        classification = 4;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = '#333';
+
+      });
+
+      let classification5 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
+      classification5.id = "classification"
+
+      classification5.addEventListener('click',()=>{
+        classification = 5;
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = 'orange';
+
       
-      let saveRouteButton = L.DomUtil.create('a', 'btn btn-default btn-sm', divSaveButton);
+      });
+
+
+      let shareRouteButton = L.DomUtil.create('a', 'btn btn-primary btn-sm', divSaveButton);
+      shareRouteButton.id = "share-route-button"
+      shareRouteButton.innerHTML = "<span class='glyphicon glyphicon-share' aria-hidden='true'></span> Share"
+
+      shareRouteButton.addEventListener('click',()=>{
+
+        if (shareRouteButton.style.backgroundColor != 'gray'){
+          shareRouteButton.style.backgroundColor = 'gray';
+          shareRouteButton.style.borderColor = 'gray';
+          shareRoute = true;
+        }
+        else {
+          shareRouteButton.style.backgroundColor = '#337ab7';
+          shareRouteButton.style.borderColor = '#337ab7';
+          shareRoute = false;
+        }
+        
+      });
+
+      
+      let saveRouteButton = L.DomUtil.create('a', 'btn btn-success btn-sm', divSaveButton);
       saveRouteButton.id = "save-route-button"
-      saveRouteButton.innerHTML = "Save Itinerary"
+      saveRouteButton.innerHTML = "<span class='glyphicon glyphicon-floppy-disk' aria-hidden='true'></span> Save Itinerary"
 
       saveRouteButton.addEventListener('click',()=>{
         let fromPlace = result['plan']['fromPlace'];
@@ -601,13 +740,15 @@ export class LeafletMapComponent implements OnInit {
         let arriveBy = result['requestParameters']['arriveBy'];
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
-        
+
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,
           "toPlace": toPlace,
           "fromPlace": fromPlace,
-          "segments": segments
+          "segments": segments,
+          "rate": classification,
+          "shared": shareRoute
         }
         
         let save_result = null;
@@ -986,6 +1127,7 @@ export class LeafletMapComponent implements OnInit {
       }
     }
   }
+
 
   search(event,func){
     var regex = new RegExp(/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/)

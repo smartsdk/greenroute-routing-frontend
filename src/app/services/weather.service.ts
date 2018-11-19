@@ -27,7 +27,7 @@ export class WeatherService {
   selectedSensor$ = this.selectedSensorSource.asObservable();
 
   pin_weather = L.icon({
-    iconUrl: "../assets/pin-weather5.png", // From https://www.iconfinder.com/search/?price=free
+    iconUrl: "../assets/pin-weather.png", // From https://www.iconfinder.com/search/?price=free
     iconSize:     [30, 30], // size of the icon
     iconAnchor:   [15, 30], // point of the icon which will correspond to marker's location
     popupAnchor:  [0, -30] // point from which the popup should open relatixe to the iconAnchor
