@@ -103,15 +103,6 @@
           <div id="toolbar-routes-container" class="panel-info">
           </div>
         </div>
-
-        <div class="container-fluid" id="toolbar-my-itineraries" style='display:none;padding:0px'>  
-            <div class="container-fluid">
-                <h4>My Itineraries</h4>
-            </div>
-            <div id="toolbar-my-itineraries-container" class="panel-info">
-            </div>
-        </div>
-        
         
         <div id="toolbar-sensor-info" style='display:none' >
           <div id="toolbar-sensor-table" *ngIf="sensor" class="container-fluid">
@@ -187,6 +178,13 @@
             <h4>Health Concerns</h4> 
             <p>{{sensor.health}}</p>           
           </div>
+        </div>
+
+        <div class="container-fluid" id="toolbar-my-itineraries" style='display:none;padding:0px;'>  
+            <div class="container-fluid" style='cursor:pointer;'>
+              <h4 data-toggle="collapse" href="#toolbar-my-itineraries-container" aria-expanded="true" aria-controls="toolbar-my-itineraries-container">My Itineraries</h4>
+            <div id="toolbar-my-itineraries-container" class="collapse">
+            </div>
         </div>
           
       </div>

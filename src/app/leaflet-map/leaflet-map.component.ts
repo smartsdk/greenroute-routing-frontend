@@ -342,7 +342,9 @@ export class LeafletMapComponent implements OnInit {
           itinerary.style.backgroundColor = '#FFFFFF';
           itinerary.style.padding = '10px 3%';
           itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
-          itinerary.innerHTML = "<b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
+          itinerary.style.borderRight = '0px';
+          itinerary.style.borderLeft = '0px';
+          itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
         }
         myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
