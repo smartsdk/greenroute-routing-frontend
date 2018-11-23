@@ -35,14 +35,14 @@ export class VehiclePositionService {
 
     private markersMap = {}; // id: marker -> para dar o update ao marker certo
 
-    private stationsApiUrl = environment.orion_url + '/v2/entities/?options=keyValues&type=VehiclePositionTestUW' ;
+    private stationsApiUrl = environment.orion_url + '/v2/entities?options=keyValues,count&limit=50&attrs=%2A,dateCreated,dateModified&orderBy=%21dateModified' ;
 
     constructor(private http: Http,private _mqttService: MqttService, private datePipe: DatePipe) { }
 
     getVehiclesPosition() {
         let myHeaders = new Headers({
-            'fiware-service': 'default',
-            'fiware-servicepath': '/',
+            'fiware-service': 'Smartspot',
+            'fiware-servicepath': '/smartspot',
         });
 
         let options = new RequestOptions({ headers: myHeaders });
@@ -62,11 +62,18 @@ export class VehiclePositionService {
         for(let sensor of sensorArray){
             if(sensor['location']){
 
-                // var popContent = ''
+                var popContent = '<b> Vehicle Information</b><br/>' +
+                                '<br/><table class="table">'
+                                +'<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+                                +'<tr><td>CO</td>'+'<td> '+  sensor['CO']  + '</td></tr>'
+                                +'<tr><td>NO2</td>'+'<td> ' + sensor['NO2'] + '</td></tr>'
+                                +'<tr><td>O3</td>'+'<td> ' + sensor['O3'] + '</td></tr>'
+                                +'<tr><td>SO2</td>'+'<td> ' + sensor['SO2'] + '</td></tr>'
+                                '</table>'
 
-                var marker = L.marker( [parseFloat(sensor['location'].split(',')[0]),parseFloat(sensor['location'].split(',')[1])], {
+                var marker = L.marker( [parseFloat(sensor['location']['coordinates'][0]),parseFloat(sensor['location']['coordinates'][1])], {
                     icon: this["pin_car"]
-                }) // .bindPopup(popContent);
+                }).bindPopup(popContent);
 
                 this.markersMap[sensor.id] = marker;
 
@@ -84,15 +91,24 @@ export class VehiclePositionService {
     }
 
     getUpdates(map){
-        this._mqttService.observe('vehiclepositiontestuw').subscribe((message:MqttMessage) => {
+        this._mqttService.observe('realtimeVehiclePosition').subscribe((message:MqttMessage) => {
             var updated = <Vehicle[]> JSON.parse(message.payload.toString()).data;
             for(let sensor of updated){
                 var marker: L.Marker = this.markersMap[sensor.id];
                 if(marker){
-                    var lat = (parseFloat(sensor['location'].split(',')[0]));
-                    var lng = (parseFloat(sensor['location'].split(',')[1]));
+                    var popContent = '<b> Vehicle Information</b><br/>' +
+                                    '<br/><table class="table">'
+                                    +'<tr><td><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>'+'<td> '+  sensor['id']  + '</td></tr>'
+                                    +'<tr><td>CO</td>'+'<td> '+  sensor['CO']  + '</td></tr>'
+                                    +'<tr><td>NO2</td>'+'<td> ' + sensor['NO2'] + '</td></tr>'
+                                    +'<tr><td>O3</td>'+'<td> ' + sensor['O3'] + '</td></tr>'
+                                    +'<tr><td>SO2</td>'+'<td> ' + sensor['SO2'] + '</td></tr>'
+                                    '</table>'
+                    var lat = (parseFloat(sensor['location']['coordinates'][0]));
+                    var lng = (parseFloat(sensor['location']['coordinates'][1]));
                     var newLatLng = new L.LatLng(lat, lng);
                     marker.setLatLng(newLatLng);
+                    marker.bindPopup(popContent);
                 }
             }
         });
