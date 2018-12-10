@@ -149,6 +149,16 @@ export class LeafletMapComponent implements OnInit {
   
   private fromResults: any[];
   private toResults: any[];
+
+  it_classification = {};
+  classification_colors = {
+    "0": ["#333", "#333", "#333", "#333", "#333"],
+    "1": ["orange", "#333", "#333", "#333", "#333"],
+    "2": ["orange", "orange", "#333", "#333", "#333"],
+    "3": ["orange", "orange", "orange", "#333", "#333"],
+    "4": ["orange", "orange", "orange", "orange", "#333"],
+    "5": ["orange", "orange", "orange", "orange", "orange"],
+  }
   
 
   @ViewChild(AdvGrowlComponent)
@@ -472,6 +482,7 @@ export class LeafletMapComponent implements OnInit {
       var current_itinerary = 0;
       
       for (let it of itineraries) {
+
         let divGroup = L.DomUtil.create('li', '', itUl);
         let legsButton = L.DomUtil.create('a', 'legs-button', divGroup);
         let legsUL = L.DomUtil.create('div', 'collapse list-group', navContent);
@@ -584,12 +595,33 @@ export class LeafletMapComponent implements OnInit {
 
         legsButton.innerHTML = 'Itinerary ' + (j+1);
         legsButton.setAttribute('itinerary', j.toString())
+
+        this.it_classification[j+1] = {}
+        this.it_classification[j+1]['classification'] = 0;
+        this.it_classification[j+1]['share'] = false;
         
         this.polylinesObj[legsButton.id]['layer'] = L.layerGroup(polyArray);
         this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
 
         legsButton.addEventListener('click', () => {
           current_itinerary = parseInt(legsButton.getAttribute('itinerary'));
+
+          if (this.it_classification[current_itinerary+1]){
+            classification1.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][0];
+            classification2.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][1];
+            classification3.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][2];
+            classification4.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][3];
+            classification5.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][4];
+          }
+          
+          if(this.it_classification[current_itinerary+1]['share'] == true){
+            shareRouteButton.style.backgroundColor = 'gray';
+            shareRouteButton.style.borderColor = 'gray';
+          }
+          else {
+            shareRouteButton.style.backgroundColor = '#337ab7';
+            shareRouteButton.style.borderColor = '#337ab7';
+          }
 
           var _content = L.DomUtil.get('toolbar-itineraries-content');
           for(var _j=0;_j<_content.children.length;_j++){         
@@ -624,7 +656,7 @@ export class LeafletMapComponent implements OnInit {
         });
         j++;
       }
-
+   
       let shareRoute = false;
       let classification = 0;
 
@@ -634,22 +666,66 @@ export class LeafletMapComponent implements OnInit {
       let classification1 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification1.id = "classification"
 
-      classification1.addEventListener('click',()=>{
-        if (classification1.style.color != 'orange' || (
-           classification1.style.color == 'orange' && (classification2.style.color == 'orange' || 
-           classification3.style.color == 'orange' || classification4.style.color == 'orange' || 
-           classification5.style.color == 'orange' ))
-          ) {
-          classification = 1;
+      function setClassificationColors(){
+        if (classification == 0 ) {
+          classification1.style.color = '#333';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 1 ) {
           classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 2 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 3 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 4 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = 'orange';
+          classification5.style.color = '#333';
+         }
+         if (classification == 5 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = 'orange';
+          classification5.style.color = 'orange';
+         }
+      }
+
+      classification1.addEventListener('click',()=>{
+        if (classification == 1) {
+          classification = 0;
+          this.it_classification[current_itinerary+1]['classification'] = 0;
+
+          classification1.style.color = '#333';
           classification2.style.color = '#333';
           classification3.style.color = '#333';
           classification4.style.color = '#333';
           classification5.style.color = '#333';
 
         } else {
-          classification = 0;
-          classification1.style.color = '#333';
+          this.it_classification[current_itinerary+1]['classification'] = 1;
+          classification = 1;
+          classification1.style.color = 'orange';
           classification2.style.color = '#333';
           classification3.style.color = '#333';
           classification4.style.color = '#333';
@@ -658,10 +734,23 @@ export class LeafletMapComponent implements OnInit {
         
       });
 
+      classification1.addEventListener('mouseover',()=>{
+          classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+      });
+
+      classification1.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification2 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification2.id = "classification"
 
       classification2.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 2;
         classification = 2;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -669,11 +758,23 @@ export class LeafletMapComponent implements OnInit {
         classification4.style.color = '#333';
         classification5.style.color = '#333';
       });
+      classification2.addEventListener('mouseover',()=>{
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+      });
+
+      classification2.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
 
       let classification3 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification3.id = "classification"
 
       classification3.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 3;
         classification = 3;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -682,10 +783,23 @@ export class LeafletMapComponent implements OnInit {
         classification5.style.color = '#333';
       });
 
+      classification3.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      classification3.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification4 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification4.id = "classification"
 
       classification4.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 4;
         classification = 4;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -695,18 +809,41 @@ export class LeafletMapComponent implements OnInit {
 
       });
 
+      classification4.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = '#333';
+      });
+
+      classification4.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification5 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification5.id = "classification"
 
       classification5.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 5;
         classification = 5;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
         classification3.style.color = 'orange';
         classification4.style.color = 'orange';
         classification5.style.color = 'orange';
+    
+      });
+      classification5.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = 'orange';
+      });
 
-      
+      classification5.addEventListener('mouseout',()=>{
+        setClassificationColors();
       });
 
 
@@ -720,11 +857,13 @@ export class LeafletMapComponent implements OnInit {
           shareRouteButton.style.backgroundColor = 'gray';
           shareRouteButton.style.borderColor = 'gray';
           shareRoute = true;
+          this.it_classification[current_itinerary+1]['share'] = true;
         }
         else {
           shareRouteButton.style.backgroundColor = '#337ab7';
           shareRouteButton.style.borderColor = '#337ab7';
           shareRoute = false;
+          this.it_classification[current_itinerary+1]['share'] = false;
         }
         
       });
@@ -741,14 +880,15 @@ export class LeafletMapComponent implements OnInit {
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
 
+        console.log(this.it_classification[current_itinerary+1]);
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,
           "toPlace": toPlace,
           "fromPlace": fromPlace,
           "segments": segments,
-          "rate": classification,
-          "shared": shareRoute
+          "rate": this.it_classification[current_itinerary+1]['classification'],
+          "shared": this.it_classification[current_itinerary+1]['share']
         }
         
         let save_result = null;
