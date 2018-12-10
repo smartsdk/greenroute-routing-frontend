@@ -165,6 +165,7 @@ h4{
   font-size: 200%;
   margin-bottom: 10px;
   margin-right: 10px;
+  cursor: pointer;
 }
 
 ::ng-deep #save-route-div{
