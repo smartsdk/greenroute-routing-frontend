@@ -80,6 +80,7 @@ export class LeafletMapComponent implements OnInit {
   }
   private startDate;
   private polylinesObj = {};
+  private myItinerariesObj = {};
 
 
 
@@ -345,6 +346,49 @@ export class LeafletMapComponent implements OnInit {
           itinerary.style.borderRight = '0px';
           itinerary.style.borderLeft = '0px';
           itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
+          
+          
+          this.myItinerariesObj[itinerary.id] = {};
+          
+          let polyArray = [];
+          for (let legs of result[it]['segments']) {      
+            var latlngs;
+            if (legs['mode']==='Public Transportation'){
+              latlngs = polyUtil.decode(legs['legGeometry']['points']);
+            }
+            else{
+              latlngs = polyUtil.decode(legs['route']);
+            }
+
+            if(latlngs){
+              var polyline = L.polyline(latlngs, { 
+                color: '#9fa1a5',
+                weight: 8
+              });
+
+              polyArray.push(polyline);
+            }
+          }
+
+          console.log(result[it])
+
+          this.myItinerariesObj[itinerary.id]['layer'] = L.layerGroup(polyArray);
+
+          itinerary.addEventListener('click', (event) => {
+            for(let polylayer in this.polylinesObj){
+              if(this.map.hasLayer(this.polylinesObj[polylayer]['layer'])){
+                this.map.removeLayer(this.polylinesObj[polylayer]['layer']);
+              }
+            }
+            for(let polylayer in this.myItinerariesObj){
+              if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+                this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+              }
+            }
+            let event_id = event.srcElement.id
+            this.map.addLayer(this.myItinerariesObj[event_id]['layer']);
+            
+          });
         }
         myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
@@ -464,6 +508,11 @@ export class LeafletMapComponent implements OnInit {
         }
         delete this.polylinesObj[polylayer];
       }
+      for(let polylayer in this.myItinerariesObj){
+        if(this.myItinerariesObj[polylayer]['layer']){
+          this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+        }
+      }
       var j = 0;
       let itUl = L.DomUtil.create('div', 'nav nav-tabs nav-justified', container);
       itUl.id = "toolbar-itineraries-content";
@@ -569,6 +618,15 @@ export class LeafletMapComponent implements OnInit {
             this.polylinesObj[legsButton.id][instButton.id] = polyline;
 
             instButton.addEventListener('click', () => {
+              if(!this.map.hasLayer(this.polylinesObj[legsButton.id]['layer'])){
+                this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
+                for(let polylayer in this.myItinerariesObj){
+                  if(this.myItinerariesObj[polylayer]['layer']){
+                    this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                  }
+                }
+              }
+
               if (L.DomUtil.hasClass(instUL, 'in')) {
                 instButton.style.backgroundColor = '#FFFFFF'; // #5091cd
                 this.polylinesObj[legsButton.id][instButton.id].setStyle({color:this.active_color});
@@ -589,6 +647,14 @@ export class LeafletMapComponent implements OnInit {
         this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
 
         legsButton.addEventListener('click', () => {
+          if(!this.map.hasLayer(this.polylinesObj[legsButton.id]['layer'])){
+            this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
+            for(let polylayer in this.myItinerariesObj){
+              if(this.myItinerariesObj[polylayer]['layer']){
+                this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+              }
+            }
+          }
           current_itinerary = parseInt(legsButton.getAttribute('itinerary'));
 
           var _content = L.DomUtil.get('toolbar-itineraries-content');
