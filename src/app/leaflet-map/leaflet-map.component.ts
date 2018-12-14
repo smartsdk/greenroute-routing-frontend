@@ -335,61 +335,103 @@ export class LeafletMapComponent implements OnInit {
         let list = L.DomUtil.create('div', 'list-group', container);
 
         for (var it in result){
-          let itinerary = L.DomUtil.create('a', 'list-group-item', list);
-          itinerary.id = 'itinerary'+it;
-          itinerary.style.borderRadius = '0%';
-          itinerary.style.color = 'black';
-          itinerary.style.cursor = 'pointer';
-          itinerary.style.backgroundColor = '#FFFFFF';
-          itinerary.style.padding = '10px 3%';
-          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
-          itinerary.style.borderRight = '0px';
-          itinerary.style.borderLeft = '0px';
-          itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
-          
-          
-          this.myItinerariesObj[itinerary.id] = {};
-          
           let polyArray = [];
-          for (let legs of result[it]['segments']) {      
+          let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
+          let itinerary = L.DomUtil.create('a', 'list-group-item', divGroup2);
+            itinerary.id = 'itinerary'+it;
+            itinerary.style.borderRadius = '0%';
+            itinerary.style.color = 'black';
+            itinerary.style.cursor = 'pointer';
+            itinerary.style.backgroundColor = '#FFFFFF';
+            itinerary.style.padding = '10px 3%';
+            itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+            itinerary.style.borderRight = '0px';
+            itinerary.style.borderLeft = '0px';
+            itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+
+          for (let legs of result[it]['segments']) {  
+            
+            this.myItinerariesObj[itinerary.id] = {};
+
+            let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
+            instUL.id = itinerary.id + "UL";
+
+            itinerary.setAttribute('data-toggle','collapse');
+            itinerary.setAttribute('href','#'+instUL.id);
+
             var latlngs;
             if (legs['mode']==='Public Transportation'){
+              let instLiFrom = L.DomUtil.create('li', '', instUL);
+              var fromDate = new Date(legs['from']['departure']);
+              instLiFrom.innerHTML = "<b>From:</b> "+legs['from']['name'] + " at "+ fromDate.getHours() + ":" + (fromDate.getMinutes()<10?'0':'') + fromDate.getMinutes();
+              instLiFrom.style.textAlign = 'justify';
+              
+              var toDate = new Date(legs['to']['arrival']);
+              let instLiTo = L.DomUtil.create('li', '', instUL);
+              instLiTo.innerHTML = "<b>To:</b> "+legs['to']['name'] + " at "+ toDate.getHours() + ":" + (toDate.getMinutes()<10?'0':'') + toDate.getMinutes();
+              instLiTo.style.textAlign = 'justify';
+              
               latlngs = polyUtil.decode(legs['legGeometry']['points']);
             }
             else{
+              for (let i of legs['instructions']) {
+                let instLi = L.DomUtil.create('li', '', instUL);
+                instLi.innerHTML = i;
+                instLi.style.textAlign = 'justify';
+              }
               latlngs = polyUtil.decode(legs['route']);
             }
 
             if(latlngs){
               var polyline = L.polyline(latlngs, { 
-                color: '#9fa1a5',
+                color: this.active_color,
                 weight: 8
               });
-
               polyArray.push(polyline);
             }
-          }
-
-          console.log(result[it])
+          
 
           this.myItinerariesObj[itinerary.id]['layer'] = L.layerGroup(polyArray);
 
           itinerary.addEventListener('click', (event) => {
+            let event_id = event.srcElement.id;
+            let _toolbarDiv = L.DomUtil.get('toolbar-routes');
+            _toolbarDiv.style.display = 'none';
+            let _container = L.DomUtil.get('toolbar-routes-container');
+            L.DomUtil.empty(_container);
             for(let polylayer in this.polylinesObj){
-              if(this.map.hasLayer(this.polylinesObj[polylayer]['layer'])){
+              if(this.polylinesObj[polylayer]['layer']){
                 this.map.removeLayer(this.polylinesObj[polylayer]['layer']);
               }
+              delete this.polylinesObj[polylayer];
             }
             for(let polylayer in this.myItinerariesObj){
-              if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
-                this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+              var _UL = L.DomUtil.get(polylayer+"UL");
+              var _button = L.DomUtil.get(polylayer);
+              if(polylayer !== event_id && L.DomUtil.hasClass(_UL, 'in')){
+                _button.style.backgroundColor = "#FFFFFF";
+                // L.DomUtil.removeClass(_UL,"in");
+                _button.click();
+                if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+                  this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                }
+              }
+              else if(polylayer === event_id){
+                if(L.DomUtil.hasClass(_UL, 'in')){
+                  _button.style.backgroundColor = "#FFFFFF";
+                  // L.DomUtil.removeClass(_UL,"in");
+                  if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+                    this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                  }
+                }else{
+                  _button.style.backgroundColor = this.active_color;
+                  this.map.addLayer(this.myItinerariesObj[event_id]['layer']);
+                }
               }
             }
-            let event_id = event.srcElement.id
-            this.map.addLayer(this.myItinerariesObj[event_id]['layer']);
-            
           });
         }
+      }
         myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
 
@@ -509,8 +551,15 @@ export class LeafletMapComponent implements OnInit {
         delete this.polylinesObj[polylayer];
       }
       for(let polylayer in this.myItinerariesObj){
-        if(this.myItinerariesObj[polylayer]['layer']){
+        if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+
           this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+          var _UL = L.DomUtil.get(polylayer+"UL");
+          var _button = L.DomUtil.get(polylayer);
+          if(L.DomUtil.hasClass(_UL, 'in')){
+            _button.style.backgroundColor = "#FFFFFF";
+            _button.click();
+          }
         }
       }
       var j = 0;
