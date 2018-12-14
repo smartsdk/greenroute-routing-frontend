@@ -333,7 +333,6 @@ export class LeafletMapComponent implements OnInit {
         var myItineraries = L.DomUtil.get('toolbar-my-itineraries');
         var container = L.DomUtil.get('toolbar-my-itineraries-container');
         let list = L.DomUtil.create('div', 'list-group', container);
-
         for (var it in result){
           let polyArray = [];
           let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
@@ -352,6 +351,8 @@ export class LeafletMapComponent implements OnInit {
           for (let legs of result[it]['segments']) {  
             
             this.myItinerariesObj[itinerary.id] = {};
+            this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
+            this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
 
             let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
             instUL.id = itinerary.id + "UL";
@@ -424,8 +425,29 @@ export class LeafletMapComponent implements OnInit {
                     this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
                   }
                 }else{
+                  this.fromLatLng = [
+                    this.myItinerariesObj[polylayer]['from']['lat'], 
+                    this.myItinerariesObj[polylayer]['from']['lon']
+                  ];
+                  this.fromHere({
+                    'latlng': {
+                      'lat': this.fromLatLng[0],
+                      'lng': this.fromLatLng[1]
+                    }
+                  },map);
+                  this.toLatLng = [
+                    this.myItinerariesObj[polylayer]['to']['lat'], 
+                    this.myItinerariesObj[polylayer]['to']['lon']
+                  ];
+                  this.toHere({
+                    'latlng': {
+                      'lat': this.toLatLng[0],
+                      'lng': this.toLatLng[1]
+                    }
+                  },map);
                   _button.style.backgroundColor = this.active_color;
-                  this.map.addLayer(this.myItinerariesObj[event_id]['layer']);
+                  this.map.addLayer(this.myItinerariesObj[polylayer]['layer']);
+                  this.map.fitBounds(L.latLngBounds(this.fromLatLng,this.toLatLng));
                 }
               }
             }
