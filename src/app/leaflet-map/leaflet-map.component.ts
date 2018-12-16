@@ -361,8 +361,8 @@ export class LeafletMapComponent implements OnInit {
             let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
             instUL.id = itinerary.id + "UL";
 
-            divGroup2.setAttribute('data-toggle','collapse');
-            divGroup2.setAttribute('href','#'+instUL.id);
+            itinerary.setAttribute('data-toggle','collapse');
+            itinerary.setAttribute('href','#'+instUL.id);
             
             instUL.addEventListener('click', event => {
               event.preventDefault();
