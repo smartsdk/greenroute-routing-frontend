@@ -346,7 +346,7 @@ export class LeafletMapComponent implements OnInit {
         for (var it in result){
           let polyArray = [];
           let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
-          let itinerary = L.DomUtil.create('a', 'list-group-item', divGroup2);
+          let itinerary = L.DomUtil.create('div', 'list-group-item', divGroup2);
             itinerary.id = 'itinerary'+it;
             itinerary.style.borderRadius = '0%';
             itinerary.style.color = 'black';
@@ -356,9 +356,13 @@ export class LeafletMapComponent implements OnInit {
             itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
             itinerary.style.borderRight = '0px';
             itinerary.style.borderLeft = '0px';
-            itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+            let itinerary_text = L.DomUtil.create('p', '', itinerary);
+            itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
 
-          for (let legs of result[it]['segments']) {  
+            itinerary_text.addEventListener('click', event => {
+              //clicking on the bold text would not trigger click events from angular, only from bootstrap
+              itinerary_text.parentElement.click();
+            })
             
             this.myItinerariesObj[itinerary.id] = {};
             this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
@@ -369,7 +373,13 @@ export class LeafletMapComponent implements OnInit {
 
             itinerary.setAttribute('data-toggle','collapse');
             itinerary.setAttribute('href','#'+instUL.id);
+            
+            instUL.addEventListener('click', event => {
+              event.preventDefault();
+              L.DomEvent.stopPropagation(event);
+            })
 
+          for (let legs of result[it]['segments']) {  
             var latlngs;
             if (legs['mode']==='Public Transportation'){
               let instLiFrom = L.DomUtil.create('li', '', instUL);
@@ -400,8 +410,7 @@ export class LeafletMapComponent implements OnInit {
               });
               polyArray.push(polyline);
             }
-          
-
+          }
           this.myItinerariesObj[itinerary.id]['layer'] = L.layerGroup(polyArray);
 
           itinerary.addEventListener('click', (event) => {
@@ -462,7 +471,6 @@ export class LeafletMapComponent implements OnInit {
               }
             }
           });
-        }
       }
         myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
@@ -1013,6 +1021,12 @@ export class LeafletMapComponent implements OnInit {
       saveRouteButton.addEventListener('click',()=>{
         let fromPlace = result['plan']['fromPlace'];
         let toPlace = result['plan']['toPlace'];
+        if(fromPlace.name === "Origin"){
+          fromPlace.name = this.fromText['display_name'].split(',')[0];
+        }
+        if(toPlace.name === "Destination"){
+          toPlace.name = this.toText['display_name'].split(',')[0];
+        }
         let arriveBy = result['requestParameters']['arriveBy'];
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
