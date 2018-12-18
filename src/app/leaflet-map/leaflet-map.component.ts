@@ -1021,10 +1021,10 @@ export class LeafletMapComponent implements OnInit {
       saveRouteButton.addEventListener('click',()=>{
         let fromPlace = result['plan']['fromPlace'];
         let toPlace = result['plan']['toPlace'];
-        if(fromPlace.name === "Origin"){
+        if(fromPlace.name === "Origin" || fromPlace.name === ""){
           fromPlace.name = this.fromText['display_name'].split(',')[0];
         }
-        if(toPlace.name === "Destination"){
+        if(toPlace.name === "Destination" || toPlace.name === ""){
           toPlace.name = this.toText['display_name'].split(',')[0];
         }
         let arriveBy = result['requestParameters']['arriveBy'];
