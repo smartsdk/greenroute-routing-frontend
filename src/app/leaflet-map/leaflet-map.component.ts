@@ -80,6 +80,7 @@ export class LeafletMapComponent implements OnInit {
   }
   private startDate;
   private polylinesObj = {};
+  private myItinerariesObj = {};
 
 
 
@@ -149,6 +150,16 @@ export class LeafletMapComponent implements OnInit {
   
   private fromResults: any[];
   private toResults: any[];
+
+  it_classification = {};
+  classification_colors = {
+    "0": ["#333", "#333", "#333", "#333", "#333"],
+    "1": ["orange", "#333", "#333", "#333", "#333"],
+    "2": ["orange", "orange", "#333", "#333", "#333"],
+    "3": ["orange", "orange", "orange", "#333", "#333"],
+    "4": ["orange", "orange", "orange", "orange", "#333"],
+    "5": ["orange", "orange", "orange", "orange", "orange"],
+  }
   
 
   @ViewChild(AdvGrowlComponent)
@@ -332,20 +343,135 @@ export class LeafletMapComponent implements OnInit {
         var myItineraries = L.DomUtil.get('toolbar-my-itineraries');
         var container = L.DomUtil.get('toolbar-my-itineraries-container');
         let list = L.DomUtil.create('div', 'list-group', container);
-
         for (var it in result){
-          let itinerary = L.DomUtil.create('a', 'list-group-item', list);
-          itinerary.id = 'itinerary'+it;
-          itinerary.style.borderRadius = '0%';
-          itinerary.style.color = 'black';
-          itinerary.style.cursor = 'pointer';
-          itinerary.style.backgroundColor = '#FFFFFF';
-          itinerary.style.padding = '10px 3%';
-          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
-          itinerary.style.borderRight = '0px';
-          itinerary.style.borderLeft = '0px';
-          itinerary.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name']
-        }
+          let polyArray = [];
+          let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
+          let itinerary = L.DomUtil.create('div', 'list-group-item', divGroup2);
+            itinerary.id = 'itinerary'+it;
+            itinerary.style.borderRadius = '0%';
+            itinerary.style.color = 'black';
+            itinerary.style.cursor = 'pointer';
+            itinerary.style.backgroundColor = '#FFFFFF';
+            itinerary.style.padding = '10px 3%';
+            itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+            itinerary.style.borderRight = '0px';
+            itinerary.style.borderLeft = '0px';
+            let itinerary_text = L.DomUtil.create('p', '', itinerary);
+            itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+
+            itinerary_text.addEventListener('click', event => {
+              //clicking on the bold text would not trigger click events from angular, only from bootstrap
+              itinerary_text.parentElement.click();
+            })
+            
+            this.myItinerariesObj[itinerary.id] = {};
+            this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
+            this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
+
+            let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
+            instUL.id = itinerary.id + "UL";
+
+            itinerary.setAttribute('data-toggle','collapse');
+            itinerary.setAttribute('href','#'+instUL.id);
+            
+            instUL.addEventListener('click', event => {
+              event.preventDefault();
+              L.DomEvent.stopPropagation(event);
+            })
+
+          for (let legs of result[it]['segments']) {  
+            var latlngs;
+            if (legs['mode']==='Public Transportation'){
+              let instLiFrom = L.DomUtil.create('li', '', instUL);
+              var fromDate = new Date(legs['from']['departure']);
+              instLiFrom.innerHTML = "<b>From:</b> "+legs['from']['name'] + " at "+ fromDate.getHours() + ":" + (fromDate.getMinutes()<10?'0':'') + fromDate.getMinutes();
+              instLiFrom.style.textAlign = 'justify';
+              
+              var toDate = new Date(legs['to']['arrival']);
+              let instLiTo = L.DomUtil.create('li', '', instUL);
+              instLiTo.innerHTML = "<b>To:</b> "+legs['to']['name'] + " at "+ toDate.getHours() + ":" + (toDate.getMinutes()<10?'0':'') + toDate.getMinutes();
+              instLiTo.style.textAlign = 'justify';
+              
+              latlngs = polyUtil.decode(legs['legGeometry']['points']);
+            }
+            else{
+              for (let i of legs['instructions']) {
+                let instLi = L.DomUtil.create('li', '', instUL);
+                instLi.innerHTML = i;
+                instLi.style.textAlign = 'justify';
+              }
+              latlngs = polyUtil.decode(legs['route']);
+            }
+
+            if(latlngs){
+              var polyline = L.polyline(latlngs, { 
+                color: this.active_color,
+                weight: 8
+              });
+              polyArray.push(polyline);
+            }
+          }
+          this.myItinerariesObj[itinerary.id]['layer'] = L.layerGroup(polyArray);
+
+          itinerary.addEventListener('click', (event) => {
+            let event_id = event.srcElement.id;
+            let _toolbarDiv = L.DomUtil.get('toolbar-routes');
+            _toolbarDiv.style.display = 'none';
+            let _container = L.DomUtil.get('toolbar-routes-container');
+            L.DomUtil.empty(_container);
+            for(let polylayer in this.polylinesObj){
+              if(this.polylinesObj[polylayer]['layer']){
+                this.map.removeLayer(this.polylinesObj[polylayer]['layer']);
+              }
+              delete this.polylinesObj[polylayer];
+            }
+            for(let polylayer in this.myItinerariesObj){
+              var _UL = L.DomUtil.get(polylayer+"UL");
+              var _button = L.DomUtil.get(polylayer);
+              if(polylayer !== event_id && L.DomUtil.hasClass(_UL, 'in')){
+                _button.style.backgroundColor = "#FFFFFF";
+                // L.DomUtil.removeClass(_UL,"in");
+                _button.click();
+                if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+                  this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                }
+              }
+              else if(polylayer === event_id){
+                if(L.DomUtil.hasClass(_UL, 'in')){
+                  _button.style.backgroundColor = "#FFFFFF";
+                  // L.DomUtil.removeClass(_UL,"in");
+                  if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+                    this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                  }
+                }else{
+                  this.fromLatLng = [
+                    this.myItinerariesObj[polylayer]['from']['lat'], 
+                    this.myItinerariesObj[polylayer]['from']['lon']
+                  ];
+                  this.fromHere({
+                    'latlng': {
+                      'lat': this.fromLatLng[0],
+                      'lng': this.fromLatLng[1]
+                    }
+                  },map);
+                  this.toLatLng = [
+                    this.myItinerariesObj[polylayer]['to']['lat'], 
+                    this.myItinerariesObj[polylayer]['to']['lon']
+                  ];
+                  this.toHere({
+                    'latlng': {
+                      'lat': this.toLatLng[0],
+                      'lng': this.toLatLng[1]
+                    }
+                  },map);
+                  _button.style.backgroundColor = this.active_color;
+                  this.map.addLayer(this.myItinerariesObj[polylayer]['layer']);
+                  this.map.fitBounds(L.latLngBounds(this.fromLatLng,this.toLatLng));
+                }
+              }
+            }
+          });
+      }
         myItineraries.style.display = 'block';
       }, error => { throw new Error(error.message) }); // ou .catch, não sei :s
 
@@ -464,6 +590,18 @@ export class LeafletMapComponent implements OnInit {
         }
         delete this.polylinesObj[polylayer];
       }
+      for(let polylayer in this.myItinerariesObj){
+        if(this.map.hasLayer(this.myItinerariesObj[polylayer]['layer'])){
+
+          this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+          var _UL = L.DomUtil.get(polylayer+"UL");
+          var _button = L.DomUtil.get(polylayer);
+          if(L.DomUtil.hasClass(_UL, 'in')){
+            _button.style.backgroundColor = "#FFFFFF";
+            _button.click();
+          }
+        }
+      }
       var j = 0;
       let itUl = L.DomUtil.create('div', 'nav nav-tabs nav-justified', container);
       itUl.id = "toolbar-itineraries-content";
@@ -472,6 +610,7 @@ export class LeafletMapComponent implements OnInit {
       var current_itinerary = 0;
       
       for (let it of itineraries) {
+
         let divGroup = L.DomUtil.create('li', '', itUl);
         let legsButton = L.DomUtil.create('a', 'legs-button', divGroup);
         let legsUL = L.DomUtil.create('div', 'collapse list-group', navContent);
@@ -569,6 +708,15 @@ export class LeafletMapComponent implements OnInit {
             this.polylinesObj[legsButton.id][instButton.id] = polyline;
 
             instButton.addEventListener('click', () => {
+              if(!this.map.hasLayer(this.polylinesObj[legsButton.id]['layer'])){
+                this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
+                for(let polylayer in this.myItinerariesObj){
+                  if(this.myItinerariesObj[polylayer]['layer']){
+                    this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+                  }
+                }
+              }
+
               if (L.DomUtil.hasClass(instUL, 'in')) {
                 instButton.style.backgroundColor = '#FFFFFF'; // #5091cd
                 this.polylinesObj[legsButton.id][instButton.id].setStyle({color:this.active_color});
@@ -584,12 +732,41 @@ export class LeafletMapComponent implements OnInit {
 
         legsButton.innerHTML = 'Itinerary ' + (j+1);
         legsButton.setAttribute('itinerary', j.toString())
+
+        this.it_classification[j+1] = {}
+        this.it_classification[j+1]['classification'] = 0;
+        this.it_classification[j+1]['share'] = false;
         
         this.polylinesObj[legsButton.id]['layer'] = L.layerGroup(polyArray);
         this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
 
         legsButton.addEventListener('click', () => {
+          if(!this.map.hasLayer(this.polylinesObj[legsButton.id]['layer'])){
+            this.map.addLayer(this.polylinesObj[legsButton.id]['layer']);
+            for(let polylayer in this.myItinerariesObj){
+              if(this.myItinerariesObj[polylayer]['layer']){
+                this.map.removeLayer(this.myItinerariesObj[polylayer]['layer']);
+              }
+            }
+          }
           current_itinerary = parseInt(legsButton.getAttribute('itinerary'));
+
+          if (this.it_classification[current_itinerary+1]){
+            classification1.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][0];
+            classification2.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][1];
+            classification3.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][2];
+            classification4.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][3];
+            classification5.style.color = this.classification_colors[this.it_classification[current_itinerary+1]['classification']][4];
+          }
+          
+          if(this.it_classification[current_itinerary+1]['share'] == true){
+            shareRouteButton.style.backgroundColor = 'gray';
+            shareRouteButton.style.borderColor = 'gray';
+          }
+          else {
+            shareRouteButton.style.backgroundColor = '#337ab7';
+            shareRouteButton.style.borderColor = '#337ab7';
+          }
 
           var _content = L.DomUtil.get('toolbar-itineraries-content');
           for(var _j=0;_j<_content.children.length;_j++){         
@@ -624,7 +801,7 @@ export class LeafletMapComponent implements OnInit {
         });
         j++;
       }
-
+   
       let shareRoute = false;
       let classification = 0;
 
@@ -634,22 +811,66 @@ export class LeafletMapComponent implements OnInit {
       let classification1 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification1.id = "classification"
 
-      classification1.addEventListener('click',()=>{
-        if (classification1.style.color != 'orange' || (
-           classification1.style.color == 'orange' && (classification2.style.color == 'orange' || 
-           classification3.style.color == 'orange' || classification4.style.color == 'orange' || 
-           classification5.style.color == 'orange' ))
-          ) {
-          classification = 1;
+      function setClassificationColors(){
+        if (classification == 0 ) {
+          classification1.style.color = '#333';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 1 ) {
           classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 2 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 3 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+         }
+         if (classification == 4 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = 'orange';
+          classification5.style.color = '#333';
+         }
+         if (classification == 5 ) {
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = 'orange';
+          classification4.style.color = 'orange';
+          classification5.style.color = 'orange';
+         }
+      }
+
+      classification1.addEventListener('click',()=>{
+        if (classification == 1) {
+          classification = 0;
+          this.it_classification[current_itinerary+1]['classification'] = 0;
+
+          classification1.style.color = '#333';
           classification2.style.color = '#333';
           classification3.style.color = '#333';
           classification4.style.color = '#333';
           classification5.style.color = '#333';
 
         } else {
-          classification = 0;
-          classification1.style.color = '#333';
+          this.it_classification[current_itinerary+1]['classification'] = 1;
+          classification = 1;
+          classification1.style.color = 'orange';
           classification2.style.color = '#333';
           classification3.style.color = '#333';
           classification4.style.color = '#333';
@@ -658,10 +879,23 @@ export class LeafletMapComponent implements OnInit {
         
       });
 
+      classification1.addEventListener('mouseover',()=>{
+          classification1.style.color = 'orange';
+          classification2.style.color = '#333';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+      });
+
+      classification1.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification2 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification2.id = "classification"
 
       classification2.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 2;
         classification = 2;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -669,11 +903,23 @@ export class LeafletMapComponent implements OnInit {
         classification4.style.color = '#333';
         classification5.style.color = '#333';
       });
+      classification2.addEventListener('mouseover',()=>{
+          classification1.style.color = 'orange';
+          classification2.style.color = 'orange';
+          classification3.style.color = '#333';
+          classification4.style.color = '#333';
+          classification5.style.color = '#333';
+      });
+
+      classification2.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
 
       let classification3 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification3.id = "classification"
 
       classification3.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 3;
         classification = 3;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -682,10 +928,23 @@ export class LeafletMapComponent implements OnInit {
         classification5.style.color = '#333';
       });
 
+      classification3.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = '#333';
+        classification5.style.color = '#333';
+      });
+
+      classification3.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification4 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification4.id = "classification"
 
       classification4.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 4;
         classification = 4;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
@@ -695,18 +954,41 @@ export class LeafletMapComponent implements OnInit {
 
       });
 
+      classification4.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = '#333';
+      });
+
+      classification4.addEventListener('mouseout',()=>{
+        setClassificationColors();
+      });
+
       let classification5 = L.DomUtil.create('span', 'fa fa-star', divSaveButton);
       classification5.id = "classification"
 
       classification5.addEventListener('click',()=>{
+        this.it_classification[current_itinerary+1]['classification'] = 5;
         classification = 5;
         classification1.style.color = 'orange';
         classification2.style.color = 'orange';
         classification3.style.color = 'orange';
         classification4.style.color = 'orange';
         classification5.style.color = 'orange';
+    
+      });
+      classification5.addEventListener('mouseover',()=>{
+        classification1.style.color = 'orange';
+        classification2.style.color = 'orange';
+        classification3.style.color = 'orange';
+        classification4.style.color = 'orange';
+        classification5.style.color = 'orange';
+      });
 
-      
+      classification5.addEventListener('mouseout',()=>{
+        setClassificationColors();
       });
 
 
@@ -720,11 +1002,13 @@ export class LeafletMapComponent implements OnInit {
           shareRouteButton.style.backgroundColor = 'gray';
           shareRouteButton.style.borderColor = 'gray';
           shareRoute = true;
+          this.it_classification[current_itinerary+1]['share'] = true;
         }
         else {
           shareRouteButton.style.backgroundColor = '#337ab7';
           shareRouteButton.style.borderColor = '#337ab7';
           shareRoute = false;
+          this.it_classification[current_itinerary+1]['share'] = false;
         }
         
       });
@@ -737,18 +1021,25 @@ export class LeafletMapComponent implements OnInit {
       saveRouteButton.addEventListener('click',()=>{
         let fromPlace = result['plan']['fromPlace'];
         let toPlace = result['plan']['toPlace'];
+        if(fromPlace.name === "Origin" || fromPlace.name === ""){
+          fromPlace.name = this.fromText['display_name'].split(',')[0];
+        }
+        if(toPlace.name === "Destination" || toPlace.name === ""){
+          toPlace.name = this.toText['display_name'].split(',')[0];
+        }
         let arriveBy = result['requestParameters']['arriveBy'];
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
 
+        console.log(this.it_classification[current_itinerary+1]);
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,
           "toPlace": toPlace,
           "fromPlace": fromPlace,
           "segments": segments,
-          "rate": classification,
-          "shared": shareRoute
+          "rate": this.it_classification[current_itinerary+1]['classification'],
+          "shared": this.it_classification[current_itinerary+1]['share']
         }
         
         let save_result = null;
