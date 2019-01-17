@@ -346,38 +346,229 @@ export class LeafletMapComponent implements OnInit {
         for (var it in result){
           let polyArray = [];
           let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
-          let itinerary = L.DomUtil.create('div', 'list-group-item', divGroup2);
-            itinerary.id = 'itinerary'+it;
-            itinerary.style.borderRadius = '0%';
-            itinerary.style.color = 'black';
-            itinerary.style.cursor = 'pointer';
-            itinerary.style.backgroundColor = '#FFFFFF';
-            itinerary.style.padding = '10px 3%';
-            itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
-            itinerary.style.borderRight = '0px';
-            itinerary.style.borderLeft = '0px';
-            let itinerary_text = L.DomUtil.create('p', '', itinerary);
-            itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+          let itinerary = L.DomUtil.create('div', 'col-md-12', divGroup2);
+          itinerary.style.paddingRight = '0px';
+          itinerary.style.paddingLeft = '0px';
+          itinerary.style.paddingTop = '5px';
+          itinerary.style.paddingBottom = '5px';
+          itinerary.id = 'itinerary'+it;
+          itinerary.style.borderRadius = '0%';
+          itinerary.style.color = 'black';
+          itinerary.style.cursor = 'pointer';
+          itinerary.style.backgroundColor = '#FFFFFF';
+          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+          itinerary.style.borderRight = '0px';
+          itinerary.style.borderLeft = '0px';
 
-            itinerary_text.addEventListener('click', event => {
-              //clicking on the bold text would not trigger click events from angular, only from bootstrap
-              itinerary_text.parentElement.click();
-            })
+          let itinerary_text = L.DomUtil.create('p', 'col-md-7', itinerary);
+          itinerary_text.style.paddingRight = '0px';
+          itinerary_text.style.paddingLeft = '0px';
+          itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+
+          itinerary_text.addEventListener('click', event => {
+            //clicking on the bold text would not trigger click events from angular, only from bootstrap
+            itinerary_text.parentElement.click();
+          })
+
+          let pollution_info = L.DomUtil.create('div', 'col-md-5', itinerary);
+          pollution_info.style.paddingRight = '0px';
+          pollution_info.style.paddingLeft = '0px';
+
+          let g_km;
+          
+          for (var pollutant in result[it]['pollutants']) {
+            console.log(result[it]['pollutants'][pollutant]['id'], result[it]['pollutants'][pollutant]['value']);
+            if (result[it]['pollutants'][pollutant]['id'] === 'co2'){
+              let pollution_co2 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_co2.id = 'co2' + it;
+              pollution_co2.setAttribute('g_km_id', 'g_km'+it);
+              pollution_co2.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_co2.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
+              pollution_co2.style.borderRadius = '100%';
+              pollution_co2.style.height = '30px';
+              pollution_co2.style.width = '30px';
+              pollution_co2.style.backgroundColor = 'tomato';
+              pollution_co2.innerHTML = 'CO2';
+              pollution_co2.style.color = 'white';
+              pollution_co2.style.fontSize = '10px'
+              pollution_co2.style.minWidth = '30px';
+              pollution_co2.style.paddingTop = '8px'
+              pollution_co2.style.paddingLeft = '5px';
+              pollution_co2.style.textAlign = 'center';
+              pollution_co2.style.marginRight = '5%';
+              pollution_co2.style.marginLeft = '6%';
+              pollution_co2.style.fontWeight = 'bold';
+
+              pollution_co2.addEventListener('mouseover', event => {
+                let value = pollution_co2.getAttribute('value');
+                pollution_co2.innerHTML = value;
+                pollution_co2.style.backgroundColor = 'grey';
+                
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).innerHTML = pollution_co2.getAttribute('unit');
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_co2.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_co2.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_co2.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_co2.style.paddingLeft = '4px';
+                }
+              });
+
+              pollution_co2.addEventListener('mouseout', event => {
+                pollution_co2.innerHTML = 'CO2';
+                pollution_co2.style.paddingLeft = '5px';
+                pollution_co2.style.backgroundColor = 'tomato';
+
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).style.display = 'none';
+              });
+            }
             
-            this.myItinerariesObj[itinerary.id] = {};
-            this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
-            this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
+            if (result[it]['pollutants'][pollutant]['id'] === 'ch4'){
+              let pollution_ch4 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_ch4.id = 'ch4' + it;
+              pollution_ch4.setAttribute('g_km_id', 'g_km'+it);
+              pollution_ch4.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_ch4.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
+              pollution_ch4.style.borderRadius = '100%';
+              pollution_ch4.style.height = '30px';
+              pollution_ch4.style.width = '30px';
+              pollution_ch4.style.backgroundColor = 'slateblue';
+              pollution_ch4.innerHTML = 'CH4';
+              pollution_ch4.style.color = 'white';
+              pollution_ch4.style.fontSize = '10px'
+              pollution_ch4.style.minWidth = '30px';
+              pollution_ch4.style.paddingTop = '8px'
+              pollution_ch4.style.paddingLeft = '5px';
+              pollution_ch4.style.textAlign = 'center';
+              pollution_ch4.style.marginRight = '4%';
+              pollution_ch4.style.fontWeight = 'bold';
 
-            let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
-            instUL.id = itinerary.id + "UL";
+              pollution_ch4.addEventListener('mouseover', event => {
+                let value = pollution_ch4.getAttribute('value');
+                pollution_ch4.innerHTML = value;
+                pollution_ch4.style.backgroundColor = 'grey';
 
-            itinerary.setAttribute('data-toggle','collapse');
-            itinerary.setAttribute('href','#'+instUL.id);
-            
-            instUL.addEventListener('click', event => {
-              event.preventDefault();
-              L.DomEvent.stopPropagation(event);
-            })
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).innerHTML = pollution_ch4.getAttribute('unit');
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_ch4.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_ch4.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_ch4.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_ch4.style.paddingLeft = '4px';
+                }
+              });
+
+              pollution_ch4.addEventListener('mouseout', event => {
+                pollution_ch4.innerHTML = 'CH4';
+                pollution_ch4.style.paddingLeft = '5px';
+                pollution_ch4.style.backgroundColor = 'slateblue';
+
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).style.display = 'none';
+              });
+            }
+
+            if (result[it]['pollutants'][pollutant]['id'] === 'n20'){
+              let pollution_n2o = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_n2o.id = 'n20' + it;
+              pollution_n2o.setAttribute('g_km_id', 'g_km'+it);
+              pollution_n2o.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_n2o.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
+              pollution_n2o.style.borderRadius = '100%';
+              pollution_n2o.style.height = '30px';
+              pollution_n2o.style.width = '30px';
+              pollution_n2o.style.backgroundColor = 'orange';
+              pollution_n2o.innerHTML = 'N2O';
+              pollution_n2o.style.color = 'white';
+              pollution_n2o.style.fontSize = '10px'
+              pollution_n2o.style.minWidth = '30px';
+              pollution_n2o.style.paddingTop = '8px'
+              pollution_n2o.style.paddingLeft = '5px';
+              pollution_n2o.style.textAlign = 'center';
+              pollution_n2o.style.fontWeight = 'bold';
+
+              pollution_n2o.addEventListener('mouseover', event => {
+                let value = pollution_n2o.getAttribute('value');
+                pollution_n2o.innerHTML = value;
+                pollution_n2o.style.backgroundColor = 'grey';
+
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).innerHTML = pollution_n2o.getAttribute('unit');;
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_n2o.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_n2o.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_n2o.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_n2o.style.paddingLeft = '4px';
+                }
+              });
+
+              pollution_n2o.addEventListener('mouseout', event => {
+                pollution_n2o.innerHTML = 'N2O';
+                pollution_n2o.style.paddingLeft = '5px';
+                pollution_n2o.style.backgroundColor = 'orange';
+                
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).style.display = 'none';
+              });
+
+            }
+          }
+
+          g_km = L.DomUtil.create('div', 'col-md-1', pollution_info)
+          g_km.id = 'g_km'+it;
+          g_km.style.borderColor = 'grey';
+          g_km.style.borderRadius = '50%';
+          g_km.style.textAlign = 'center';
+          g_km.style.width = '22%';
+          g_km.style.borderColor = '#f2f2f2';
+          g_km.style.borderRadius = '10%';
+          g_km.style.paddingLeft = '0px';
+          g_km.style.paddingRight = '0px';
+          g_km.style.marginLeft = '5%';
+          g_km.style.marginTop = '5%';
+          g_km.style.fontSize = '11px';
+          g_km.style.backgroundColor = '#f2f2f2';
+          g_km.style.display = 'none';
+
+          this.myItinerariesObj[itinerary.id] = {};
+          this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
+          this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
+
+          let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
+          instUL.id = itinerary.id + "UL";
+
+          itinerary.setAttribute('data-toggle','collapse');
+          itinerary.setAttribute('href','#'+instUL.id);
+          
+          instUL.addEventListener('click', event => {
+            event.preventDefault();
+            L.DomEvent.stopPropagation(event);
+          })
 
           for (let legs of result[it]['segments']) {  
             var latlngs;
@@ -1031,7 +1222,6 @@ export class LeafletMapComponent implements OnInit {
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
 
-        console.log(this.it_classification[current_itinerary+1]);
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,
