@@ -5,6 +5,6 @@
 
 export const environment = {
   production: false,
-  backend_url: 'https://api.greenroutesdk.com.mx/back-sdk/',
+  backend_url: 'https://api.polifonias.com.mx/back-sdk/',
   orion_url: 'https://orion.greenroutesdk.com.mx'
 };

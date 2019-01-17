@@ -271,7 +271,7 @@ button, input, select, textarea, option{
   margin-bottom: 3%;
 }
 
-#toolbar-pois-table:hover,#toolbar-routes:hover,#toolbar-sensor-info:hover,#toolbar-sensor-health:hover,#toolbar-form:hover,#toolbar-pollen-info:hover,#toolbar-weather-info:hover {
+#toolbar-pois-table:hover,#toolbar-routes:hover,#toolbar-sensor-info:hover,#toolbar-sensor-health:hover,#toolbar-form:hover,#toolbar-pollen-info:hover,#toolbar-weather-info:hover,#toolbar-my-itineraries:hover {
   box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
 }
 

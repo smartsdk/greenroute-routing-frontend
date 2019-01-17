@@ -360,7 +360,7 @@ export class LeafletMapComponent implements OnInit {
           itinerary.style.borderRight = '0px';
           itinerary.style.borderLeft = '0px';
 
-          let itinerary_text = L.DomUtil.create('p', 'col-md-8', itinerary);
+          let itinerary_text = L.DomUtil.create('p', 'col-md-7', itinerary);
           itinerary_text.style.paddingRight = '0px';
           itinerary_text.style.paddingLeft = '0px';
           itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
@@ -370,14 +370,20 @@ export class LeafletMapComponent implements OnInit {
             itinerary_text.parentElement.click();
           })
 
-          let pollution_info = L.DomUtil.create('div', 'col-md-4', itinerary);
+          let pollution_info = L.DomUtil.create('div', 'col-md-5', itinerary);
           pollution_info.style.paddingRight = '0px';
           pollution_info.style.paddingLeft = '0px';
-          
-          // for (var pollutant in result[it]['pollutants']) {
 
-          //   if (pollutant['id'] == 'co2'){
+          let g_km;
+          
+          for (var pollutant in result[it]['pollutants']) {
+            console.log(result[it]['pollutants'][pollutant]['id'], result[it]['pollutants'][pollutant]['value']);
+            if (result[it]['pollutants'][pollutant]['id'] === 'co2'){
               let pollution_co2 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_co2.id = 'co2' + it;
+              pollution_co2.setAttribute('g_km_id', 'g_km'+it);
+              pollution_co2.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_co2.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
               pollution_co2.style.borderRadius = '100%';
               pollution_co2.style.height = '30px';
               pollution_co2.style.width = '30px';
@@ -389,24 +395,49 @@ export class LeafletMapComponent implements OnInit {
               pollution_co2.style.paddingTop = '8px'
               pollution_co2.style.paddingLeft = '5px';
               pollution_co2.style.textAlign = 'center';
-              pollution_co2.style.marginRight = '3%';
+              pollution_co2.style.marginRight = '5%';
+              pollution_co2.style.marginLeft = '6%';
               pollution_co2.style.fontWeight = 'bold';
 
               pollution_co2.addEventListener('mouseover', event => {
-                pollution_co2.innerHTML = '10'; //pollutant['value'];
-                pollution_co2.style.paddingLeft = '9px';
+                let value = pollution_co2.getAttribute('value');
+                pollution_co2.innerHTML = value;
                 pollution_co2.style.backgroundColor = 'grey';
+                
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).innerHTML = pollution_co2.getAttribute('unit');
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_co2.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_co2.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_co2.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_co2.style.paddingLeft = '4px';
+                }
               });
 
               pollution_co2.addEventListener('mouseout', event => {
                 pollution_co2.innerHTML = 'CO2';
                 pollution_co2.style.paddingLeft = '5px';
                 pollution_co2.style.backgroundColor = 'tomato';
+
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_co2.getAttribute('g_km_id')).style.display = 'none';
               });
-            // }
+            }
             
-            // if (pollutant['id'] == 'ch4'){
+            if (result[it]['pollutants'][pollutant]['id'] === 'ch4'){
               let pollution_ch4 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_ch4.id = 'ch4' + it;
+              pollution_ch4.setAttribute('g_km_id', 'g_km'+it);
+              pollution_ch4.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_ch4.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
               pollution_ch4.style.borderRadius = '100%';
               pollution_ch4.style.height = '30px';
               pollution_ch4.style.width = '30px';
@@ -418,24 +449,48 @@ export class LeafletMapComponent implements OnInit {
               pollution_ch4.style.paddingTop = '8px'
               pollution_ch4.style.paddingLeft = '5px';
               pollution_ch4.style.textAlign = 'center';
-              pollution_ch4.style.marginRight = '3%';
+              pollution_ch4.style.marginRight = '4%';
               pollution_ch4.style.fontWeight = 'bold';
 
               pollution_ch4.addEventListener('mouseover', event => {
-                pollution_ch4.innerHTML = '18'; // pollutant['value'];
-                pollution_ch4.style.paddingLeft = '9px';
+                let value = pollution_ch4.getAttribute('value');
+                pollution_ch4.innerHTML = value;
                 pollution_ch4.style.backgroundColor = 'grey';
+
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).innerHTML = pollution_ch4.getAttribute('unit');
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_ch4.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_ch4.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_ch4.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_ch4.style.paddingLeft = '4px';
+                }
               });
 
               pollution_ch4.addEventListener('mouseout', event => {
                 pollution_ch4.innerHTML = 'CH4';
                 pollution_ch4.style.paddingLeft = '5px';
                 pollution_ch4.style.backgroundColor = 'slateblue';
-              });
-            // }
 
-            // if (pollutant['id'] == 'n20'){
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_ch4.getAttribute('g_km_id')).style.display = 'none';
+              });
+            }
+
+            if (result[it]['pollutants'][pollutant]['id'] === 'n20'){
               let pollution_n2o = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_n2o.id = 'n20' + it;
+              pollution_n2o.setAttribute('g_km_id', 'g_km'+it);
+              pollution_n2o.setAttribute('value', parseInt(result[it]['pollutants'][pollutant]['value']).toString());
+              pollution_n2o.setAttribute('unit', result[it]['pollutants'][pollutant]['unit']);
               pollution_n2o.style.borderRadius = '100%';
               pollution_n2o.style.height = '30px';
               pollution_n2o.style.width = '30px';
@@ -450,19 +505,55 @@ export class LeafletMapComponent implements OnInit {
               pollution_n2o.style.fontWeight = 'bold';
 
               pollution_n2o.addEventListener('mouseover', event => {
-                pollution_n2o.innerHTML = '23'; // pollutant['value'];
-                pollution_n2o.style.paddingLeft = '9px';
+                let value = pollution_n2o.getAttribute('value');
+                pollution_n2o.innerHTML = value;
                 pollution_n2o.style.backgroundColor = 'grey';
+
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).innerHTML = pollution_n2o.getAttribute('unit');;
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).style.display = 'initial';
+
+                if (value.toString().length == 1){
+                  pollution_n2o.style.paddingLeft = '12px';
+                }
+                if (value.toString().length == 2){
+                  pollution_n2o.style.paddingLeft = '10px';
+                }
+
+                if (value.toString().length == 3){
+                  pollution_n2o.style.paddingLeft = '6px';
+                }
+                if (value.toString().length == 4){
+                  pollution_n2o.style.paddingLeft = '4px';
+                }
               });
 
               pollution_n2o.addEventListener('mouseout', event => {
                 pollution_n2o.innerHTML = 'N2O';
                 pollution_n2o.style.paddingLeft = '5px';
                 pollution_n2o.style.backgroundColor = 'orange';
+                
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).innerHTML = 'g/km';
+                document.getElementById(pollution_n2o.getAttribute('g_km_id')).style.display = 'none';
               });
 
-            // }
-          // }
+            }
+          }
+
+          g_km = L.DomUtil.create('div', 'col-md-1', pollution_info)
+          g_km.id = 'g_km'+it;
+          g_km.style.borderColor = 'grey';
+          g_km.style.borderRadius = '50%';
+          g_km.style.textAlign = 'center';
+          g_km.style.width = '22%';
+          g_km.style.borderColor = '#f2f2f2';
+          g_km.style.borderRadius = '10%';
+          g_km.style.paddingLeft = '0px';
+          g_km.style.paddingRight = '0px';
+          g_km.style.marginLeft = '5%';
+          g_km.style.marginTop = '5%';
+          g_km.style.fontSize = '11px';
+          g_km.style.backgroundColor = '#f2f2f2';
+          g_km.style.display = 'none';
 
           this.myItinerariesObj[itinerary.id] = {};
           this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
