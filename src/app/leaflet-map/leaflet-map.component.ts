@@ -346,38 +346,138 @@ export class LeafletMapComponent implements OnInit {
         for (var it in result){
           let polyArray = [];
           let divGroup2 = L.DomUtil.create('div', 'inst-container', list);
-          let itinerary = L.DomUtil.create('div', 'list-group-item', divGroup2);
-            itinerary.id = 'itinerary'+it;
-            itinerary.style.borderRadius = '0%';
-            itinerary.style.color = 'black';
-            itinerary.style.cursor = 'pointer';
-            itinerary.style.backgroundColor = '#FFFFFF';
-            itinerary.style.padding = '10px 3%';
-            itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
-            itinerary.style.borderRight = '0px';
-            itinerary.style.borderLeft = '0px';
-            let itinerary_text = L.DomUtil.create('p', '', itinerary);
-            itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+          let itinerary = L.DomUtil.create('div', 'col-md-12', divGroup2);
+          itinerary.style.paddingRight = '0px';
+          itinerary.style.paddingLeft = '0px';
+          itinerary.style.paddingTop = '5px';
+          itinerary.style.paddingBottom = '5px';
+          itinerary.id = 'itinerary'+it;
+          itinerary.style.borderRadius = '0%';
+          itinerary.style.color = 'black';
+          itinerary.style.cursor = 'pointer';
+          itinerary.style.backgroundColor = '#FFFFFF';
+          itinerary.style.borderBottom = '1px solid rgb(230, 230, 230)';
+          itinerary.style.borderRight = '0px';
+          itinerary.style.borderLeft = '0px';
 
-            itinerary_text.addEventListener('click', event => {
-              //clicking on the bold text would not trigger click events from angular, only from bootstrap
-              itinerary_text.parentElement.click();
-            })
+          let itinerary_text = L.DomUtil.create('p', 'col-md-8', itinerary);
+          itinerary_text.style.paddingRight = '0px';
+          itinerary_text.style.paddingLeft = '0px';
+          itinerary_text.innerHTML = "● <b> From </b>" + result[it]['fromPlace']['name'] + " <b>To</b> " + result[it]['toPlace']['name'];
+
+          itinerary_text.addEventListener('click', event => {
+            //clicking on the bold text would not trigger click events from angular, only from bootstrap
+            itinerary_text.parentElement.click();
+          })
+
+          let pollution_info = L.DomUtil.create('div', 'col-md-4', itinerary);
+          pollution_info.style.paddingRight = '0px';
+          pollution_info.style.paddingLeft = '0px';
+          
+          // for (var pollutant in result[it]['pollutants']) {
+
+          //   if (pollutant['id'] == 'co2'){
+              let pollution_co2 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_co2.style.borderRadius = '100%';
+              pollution_co2.style.height = '30px';
+              pollution_co2.style.width = '30px';
+              pollution_co2.style.backgroundColor = 'tomato';
+              pollution_co2.innerHTML = 'CO2';
+              pollution_co2.style.color = 'white';
+              pollution_co2.style.fontSize = '10px'
+              pollution_co2.style.minWidth = '30px';
+              pollution_co2.style.paddingTop = '8px'
+              pollution_co2.style.paddingLeft = '5px';
+              pollution_co2.style.textAlign = 'center';
+              pollution_co2.style.marginRight = '3%';
+              pollution_co2.style.fontWeight = 'bold';
+
+              pollution_co2.addEventListener('mouseover', event => {
+                pollution_co2.innerHTML = '10'; //pollutant['value'];
+                pollution_co2.style.paddingLeft = '9px';
+                pollution_co2.style.backgroundColor = 'grey';
+              });
+
+              pollution_co2.addEventListener('mouseout', event => {
+                pollution_co2.innerHTML = 'CO2';
+                pollution_co2.style.paddingLeft = '5px';
+                pollution_co2.style.backgroundColor = 'tomato';
+              });
+            // }
             
-            this.myItinerariesObj[itinerary.id] = {};
-            this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
-            this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
+            // if (pollutant['id'] == 'ch4'){
+              let pollution_ch4 = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_ch4.style.borderRadius = '100%';
+              pollution_ch4.style.height = '30px';
+              pollution_ch4.style.width = '30px';
+              pollution_ch4.style.backgroundColor = 'slateblue';
+              pollution_ch4.innerHTML = 'CH4';
+              pollution_ch4.style.color = 'white';
+              pollution_ch4.style.fontSize = '10px'
+              pollution_ch4.style.minWidth = '30px';
+              pollution_ch4.style.paddingTop = '8px'
+              pollution_ch4.style.paddingLeft = '5px';
+              pollution_ch4.style.textAlign = 'center';
+              pollution_ch4.style.marginRight = '3%';
+              pollution_ch4.style.fontWeight = 'bold';
 
-            let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
-            instUL.id = itinerary.id + "UL";
+              pollution_ch4.addEventListener('mouseover', event => {
+                pollution_ch4.innerHTML = '18'; // pollutant['value'];
+                pollution_ch4.style.paddingLeft = '9px';
+                pollution_ch4.style.backgroundColor = 'grey';
+              });
 
-            itinerary.setAttribute('data-toggle','collapse');
-            itinerary.setAttribute('href','#'+instUL.id);
-            
-            instUL.addEventListener('click', event => {
-              event.preventDefault();
-              L.DomEvent.stopPropagation(event);
-            })
+              pollution_ch4.addEventListener('mouseout', event => {
+                pollution_ch4.innerHTML = 'CH4';
+                pollution_ch4.style.paddingLeft = '5px';
+                pollution_ch4.style.backgroundColor = 'slateblue';
+              });
+            // }
+
+            // if (pollutant['id'] == 'n20'){
+              let pollution_n2o = L.DomUtil.create('div', 'col-md-1', pollution_info);
+              pollution_n2o.style.borderRadius = '100%';
+              pollution_n2o.style.height = '30px';
+              pollution_n2o.style.width = '30px';
+              pollution_n2o.style.backgroundColor = 'orange';
+              pollution_n2o.innerHTML = 'N2O';
+              pollution_n2o.style.color = 'white';
+              pollution_n2o.style.fontSize = '10px'
+              pollution_n2o.style.minWidth = '30px';
+              pollution_n2o.style.paddingTop = '8px'
+              pollution_n2o.style.paddingLeft = '5px';
+              pollution_n2o.style.textAlign = 'center';
+              pollution_n2o.style.fontWeight = 'bold';
+
+              pollution_n2o.addEventListener('mouseover', event => {
+                pollution_n2o.innerHTML = '23'; // pollutant['value'];
+                pollution_n2o.style.paddingLeft = '9px';
+                pollution_n2o.style.backgroundColor = 'grey';
+              });
+
+              pollution_n2o.addEventListener('mouseout', event => {
+                pollution_n2o.innerHTML = 'N2O';
+                pollution_n2o.style.paddingLeft = '5px';
+                pollution_n2o.style.backgroundColor = 'orange';
+              });
+
+            // }
+          // }
+
+          this.myItinerariesObj[itinerary.id] = {};
+          this.myItinerariesObj[itinerary.id]["from"] = result[it]['fromPlace'];
+          this.myItinerariesObj[itinerary.id]["to"] = result[it]['toPlace'];
+
+          let instUL = L.DomUtil.create('ul', 'collapse ', divGroup2);
+          instUL.id = itinerary.id + "UL";
+
+          itinerary.setAttribute('data-toggle','collapse');
+          itinerary.setAttribute('href','#'+instUL.id);
+          
+          instUL.addEventListener('click', event => {
+            event.preventDefault();
+            L.DomEvent.stopPropagation(event);
+          })
 
           for (let legs of result[it]['segments']) {  
             var latlngs;
@@ -1031,7 +1131,6 @@ export class LeafletMapComponent implements OnInit {
         let wheelchair = result['requestParameters']['wheelchair'];
         let segments = itineraries[current_itinerary]['legs'];
 
-        console.log(this.it_classification[current_itinerary+1]);
         let data = {
           "wheelchair": wheelchair,
           "arriveBy": arriveBy,

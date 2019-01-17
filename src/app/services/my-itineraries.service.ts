@@ -40,6 +40,7 @@ export class MyItinerariesService {
         let itinerariesUrl = this.greenRouteAPI + 'trips/user/' + userID;
 
         return this.http.get(itinerariesUrl, options=options).map((response: Response) => {
+            console.log(response.json());
             return <Itineraries[]> response.json();
         }).catch(err=>{throw new Error(err.message)});
     }
